@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 
-export type ButtonTone = 'default' | 'solid' | 'solid-signal' | 'ghost'
+export type ButtonTone = 'default' | 'solid' | 'solid-signal' | 'ghost' | 'ghost-on-solid'
 export type ButtonSize = 'md' | 'sm'
 
 type ButtonBaseProps = Omit<ComponentProps<'button'>, 'className' | 'style' | 'children'> & {
@@ -27,6 +27,7 @@ const toneClasses: Record<ButtonTone, string> = {
   solid: 'bg-fg text-on-solid border-fg hover:bg-fg-soft',
   'solid-signal': 'bg-signal text-on-solid border-signal hover:bg-signal-strong',
   ghost: 'bg-transparent text-fg border-transparent hover:bg-surface-muted',
+  'ghost-on-solid': 'bg-transparent text-on-solid border-transparent hover:bg-on-solid/15',
 }
 
 export function Button({ tone = 'default', size = 'md', icon, type = 'button', children, ...rest }: ButtonProps) {

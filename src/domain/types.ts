@@ -157,12 +157,10 @@ export interface ShipmentView {
   customer: string
   origin: string
   destination: string
-  operators: string
   status: string
   subStatus: string
   health: Health
-  routeText: string
-  stages: { kind: 'road' | 'sea' | 'port'; weight: number; progress: number; current: boolean }[]
+  stages: { kind: 'road' | 'sea' | 'port'; weight: number; progress: number; current: boolean; from: string; to: string; operator: string }[]
   done: StepView[]
   next: StepView[]
   eta: EtaView

@@ -78,7 +78,6 @@ Every item below is a choice not covered by the PRD / data-model, or a conflict 
   - Delayed styling (signal border, tinted row, delta flag) is driven by `tags.includes('delayed')`, so a delayed row stands out even when its tone is `stale`.
   - Customer views show tone `ai` as `ok` (pending AI is invisible to them).
   - The banner drops the reason when it repeats the status ("Held at customs").
-  - `ModeBar` rounds `stages.weight` into 1–3 flex sizes.
 - **Actions and documents:**
   - The "Upload document" action uploads the first `missing` document (else the first `flagged` one).
   - The document "Open" button is inert (no file URLs in a mock).
@@ -111,8 +110,9 @@ Every item below is a choice not covered by the PRD / data-model, or a conflict 
   - `contact_operator` names the current leg's operator.
 - **Notice reason:** the latest ACT `BREAKDOWN` / `DELAYED` / `CUSTOMS_HOLD`. For `DELAYED` the raw `delayReasonCode` is shown, since status-codes.md has no text table for those codes.
 - **Customer projection:** tone `ai` → `ok` (or `pre`); `ai_pending` incidents removed; sources lose `ai` and `raw`.
-- **Display fields:** `subStatus` = location of the latest ACT plus the reason; `operators` = the current leg's operator (+ Terminal Golfo with T49 data); `routeText` uses i18n keys `route.road/sea/port` (a new prefix).
+- **Display fields:** `subStatus` = the reason only; the place is left out because the mode bar already shows it.
 - **Sort (§8.4):** by the ETA *shown*, so a stale or held shipment sorts by planned delivery even when an operator ETA exists.
+- **CONFLICT, sort (§8.4):** the list is sorted by worst incident first (blocking → attention → review → none, `rules.severityRank`), then by the PRD's ETA order. The PRD sorts by ETA only; changed at the product owner's request (2026-11-21).
 - **Duplicate reports:** the two `VESSEL_ARRIVED` reports on 24817 (DCSA + T49, same instant) render as one step with two sources.
 
 ## 5b. Wiring
@@ -196,3 +196,12 @@ Not changed, deliberately:
 ## 15. No cache for shipments (2026-11-21)
 - `shipmentsQuery` drops `staleTime: Infinity` (default 0) and sets `gcTime: 1000`: shipments change on their own in production, so every visit to a role fetches fresh (the loader's `fetchQuery` waits, `PageLoading` shows briefly) and a role's data is dropped 1 s after its page unmounts. `gcTime: 0` would drop the loader's data before the page subscribes (extra fetch and a suspense flash); Suspense enforces 1 s anyway. Roles never share an entry (`['shipments', role]`).
 - `['emailReading', id]` keeps `gcTime: Infinity`: the AI reads each email once per page load. It is the only entry kept across visits.
+
+## 16. Shipment row (2026-11-21)
+- Every active incident is written in the row with a severity word (Blocking, Attention, Review); the icon tile and its health colours are gone. Ops only, next to the primary action, which runs the same code as the detail.
+- `ModeBar` shows stops above the stages and operators below (`stages[].from/to/operator`, replacing `operators` and `routeText`); under `sm` it falls back to one itinerary line.
+- **CONFLICT, PRD §8.1/§12 and CLAUDE.md:** with no operator ETA the ETA column is hidden instead of showing "ETA not available" (product decision).
+- Each row is a card. Its header is orange when the shipment has a blocking incident and blue otherwise; a delayed shipment also gets a "Delayed +N d" tag there. Tracking bars are blue, grey when stale.
+- Facts read Status, Planned (centred), ETA (right). A pending AI incident links to its review in the detail (`focusAiReview`).
+- **CONFLICT, PRD §9:** the AI block shows only confidence (in the step's chip), the original email and Accept/Reject; the quote and "Read as" are gone (product decision).
+- **CONFLICT, PRD §10:** the legend under the list is removed (product decision).

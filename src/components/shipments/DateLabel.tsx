@@ -12,6 +12,7 @@ export type DateLabelProps = {
   to?: string
   dateOnly?: boolean
   variant?: 'step' | 'eta'
+  chip?: boolean // false: date only
 }
 
 const colorClasses: Partial<Record<StepLabel, string>> = {
@@ -23,10 +24,10 @@ const colorClasses: Partial<Record<StepLabel, string>> = {
 const variantClasses = { step: 'text-meta', eta: 'text-body font-semibold' } as const
 
 /** Label chip (ACT/EST/… for ops, words for customers) and formatted date. */
-export function DateLabel({ label, audience, date, to, dateOnly, variant = 'step' }: DateLabelProps) {
+export function DateLabel({ label, audience, date, to, dateOnly, variant = 'step', chip = true }: DateLabelProps) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
-      <Chip tone={labelChip[label]}>{t(labelKey(label, audience))}</Chip>
+      {chip && <Chip tone={labelChip[label]}>{t(labelKey(label, audience))}</Chip>}
       {date && (
         <time dateTime={date} className={`font-mono tabular-nums ${variantClasses[variant]} ${colorClasses[label] ?? 'text-fg-muted'}`}>
           {formatRange(date, to, dateOnly)}

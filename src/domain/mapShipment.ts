@@ -114,11 +114,9 @@ function mapShipment(payload: ShipmentPayload, data: ShipmentsData, audience: Au
   const pendingEta = legs.flatMap((l) => l.aiEtas).find((c) => all.some((u) => u.id === c.updateId && review(u) === 'pending'))
   const pendingConfidence = all.find((u) => u.id === pendingEta?.updateId)?.ai?.modelConfidence
 
-  const lastAct = done.filter((s) => s.label === 'ACT').at(-1)
   const statusTag: Tag | 'NOT_DEPARTED' = delivered ? FINAL[last.rec.mode] : !departed ? 'NOT_DEPARTED'
     : cur.state.status === 'VESSEL_DEPARTED' ? 'AT_SEA' : (cur.state.status ?? 'NOT_DEPARTED')
   const statusLabel = t(tagKey(statusTag))
-  const terminalOperator = cur.updates.find((u) => u.source.type === 'terminal_api')?.source.operatorName
   const deliveredAt = delivered ? last.updates.find((u) => u.tag === FINAL[last.rec.mode] && u.order === 'applied')?.occurredAt : undefined
 
   return {
@@ -128,15 +126,9 @@ function mapShipment(payload: ShipmentPayload, data: ShipmentsData, audience: Au
     customer: record.customerName,
     origin: record.originSite.name,
     destination: record.destination.name,
-    operators: [cur.operator, terminalOperator].filter(Boolean).join(' · '),
     status: tagKey(statusTag),
-    subStatus: [lastAct?.location, reason !== statusLabel ? reason : undefined].filter(Boolean).join(' · '),
+    subStatus: reason && reason !== statusLabel ? reason : '',
     health: rules.health({ delivered, stale: stale.stale, hold: !!holdLeg, delayed: delay.delayed, missingDocument: missing.length > 0, aiPending: isOps && !!pendingAi, departed }),
-    routeText: legs.flatMap((l) => {
-      if (l.rec.mode === 'road') return [t('route.road')]
-      const sea = t('route.sea', { from: shortPlace(l.rec.from.name), to: shortPlace(l.rec.to.name) })
-      return l.port ? [sea, t('route.port')] : [sea]
-    }).join(' · '),
     stages: stages(legs, current, delivered),
     done: isOps ? done : forCustomer(done),
     next: isOps ? next : forCustomer(next),
@@ -269,14 +261,16 @@ function stages(legs: Leg[], current: number, delivered: boolean): ShipmentView[
     const status = l.state.status
     const passed = i < current || delivered || l.state.closed
     const isCurrent = i === current && !delivered
+    const route = { from: shortPlace(l.rec.from.name), to: shortPlace(l.rec.to.name), operator: l.operator }
     if (l.rec.mode === 'road') {
       const progress = passed ? 100 : i > current || !status || PRE_DEPARTURE.has(status) ? 0 : 50
-      return [{ kind: 'road' as const, weight: 1, progress, current: isCurrent }]
+      return [{ kind: 'road' as const, weight: 1, progress, current: isCurrent, ...route }]
     }
     const arrived = passed || (status !== undefined && AT_PORT.has(status))
-    const sea = { kind: 'sea' as const, weight: 3, progress: arrived ? 100 : i === current && status === 'VESSEL_DEPARTED' ? 50 : 0, current: isCurrent && !(arrived && l.port) }
+    const sea = { kind: 'sea' as const, weight: 3, progress: arrived ? 100 : i === current && status === 'VESSEL_DEPARTED' ? 50 : 0, current: isCurrent && !(arrived && l.port), ...route }
     if (!l.port) return [sea]
-    const port = { kind: 'port' as const, weight: 1, progress: passed ? 100 : arrived ? 50 : 0, current: isCurrent && arrived }
+    const terminal = l.updates.find((u) => u.source.type === 'terminal_api')?.source.operatorName ?? l.operator
+    const port = { kind: 'port' as const, weight: 1, progress: passed ? 100 : arrived ? 50 : 0, current: isCurrent && arrived, from: route.to, to: route.to, operator: terminal }
     return [sea, port]
   })
 }

@@ -25,6 +25,7 @@ export type TimelineStepProps = {
 export function TimelineStep({ shipmentId, step, phase, role, connector, aiAlternative }: TimelineStepProps) {
   const { audience } = getPersona(role)
   const isOps = audience === 'ops'
+  const ai = step.label === 'AI' ? step.sources.find((s) => s.ai)?.ai : undefined
   return (
     <TimelineItem tone={stepDot(step, phase)} connector={connector}>
       <p className="text-ui font-medium">
@@ -35,7 +36,8 @@ export function TimelineStep({ shipmentId, step, phase, role, connector, aiAlter
         {step.previousDate && (
           <s className="font-mono tabular-nums">{t('ui.was', { date: formatDate(step.previousDate) })}</s>
         )}
-        <DateLabel label={step.label} audience={audience} date={step.date} />
+        {ai && <Chip tone="dotted">{t('ui.ai.confidence', { pct: Math.round(ai.confidence * 100) })}</Chip>}
+        <DateLabel label={step.label} audience={audience} date={step.date} chip={!ai} />
         {step.note && <Tag tone="soft-signal">{step.note}</Tag>}
         {!step.sources.some((s) => s.operator === step.operator) && <span>{step.operator}</span>}
       </div>

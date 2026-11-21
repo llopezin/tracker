@@ -81,9 +81,22 @@ export function health(x: HealthInput & { delivered: boolean }): Health {
 }
 
 /** Delivery ETA, else next-stop ETA, else planned delivery (ties by id). */
+/** 0 blocking, 1 attention, 2 review. */
+export const incidentRank: Record<IncidentType, 0 | 1 | 2> = {
+  customs_hold: 0,
+  missing_document: 0,
+  delay: 1,
+  stale: 1,
+  unmapped: 1,
+  ai_pending: 2,
+}
+
+/** Worst incident first (3 without incidents). */
+export const severityRank = (incidents: { type: IncidentType }[]) => Math.min(3, ...incidents.map((i) => incidentRank[i.type]))
+
 export function sortShipments(views: ShipmentView[]): ShipmentView[] {
   const key = (v: ShipmentView) => Date.parse(v.eta.scope === 'none' ? v.plannedDelivery : v.eta.from)
-  return [...views].sort((a, b) => key(a) - key(b) || a.id.localeCompare(b.id))
+  return [...views].sort((a, b) => severityRank(a.incidents) - severityRank(b.incidents) || key(a) - key(b) || a.id.localeCompare(b.id))
 }
 
 // ── Incidents, actions, tags ──

@@ -102,9 +102,9 @@ describe('mapShipment golden', () => {
     expect(c).not.toHaveProperty('aiAlternative')
   })
 
-  it('sort order: delivery ETA, else next-stop ETA, else planned delivery', () => {
+  it('sort order: worst incident (blocking, attention, review, none), then delivery ETA, else next-stop ETA, else planned delivery', () => {
     expect(views().map((v) => v.id)).toEqual(
-      ['ACM-24844', 'ACM-24812', 'ACM-24790', 'ACM-24801', 'ACM-24817', 'ACM-24755', 'ACM-24866'])
+      ['ACM-24801', 'ACM-24817', 'ACM-24812', 'ACM-24755', 'ACM-24790', 'ACM-24844', 'ACM-24866'])
   })
 })
 

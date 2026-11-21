@@ -179,16 +179,17 @@ interface ShipmentView {
   customer: string;                   // /ops only
   origin: string;
   destination: string;
-  operators: string;                  // operator(s) shown in the row
   status: string;                     // i18n key from the current tag
-  subStatus: string;                  // place + reason
+  subStatus: string;                  // reason (place is already in the mode bar)
   tone: 'ok' | 'delay' | 'risk' | 'ai' | 'stale' | 'pre';
-  routeText: string;                  // "Road · Sea Valencia → Veracruz · Port · Road"
   stages: {
     kind: 'road' | 'sea' | 'port';    // port only with Terminal49 data
     weight: number;                   // relative width
     progress: number;                 // 0–100
     current: boolean;
+    from: string;                     // short place name ("Valencia")
+    to: string;                       // same as from for port
+    operator: string;                 // port: the terminal operator
   }[];
   done: StepView[];                   // oldest first
   next: StepView[];                   // in order

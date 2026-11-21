@@ -10,7 +10,7 @@ export type TimelineItemProps = Omit<ComponentProps<'li'>, 'className' | 'style'
 }
 
 const dotClasses: Record<TimelineItemTone, string> = {
-  solid: 'bg-fg',
+  solid: 'bg-accent',
   'solid-signal': 'bg-signal',
   dotted: 'border-2 border-dotted border-fg bg-surface-muted',
   hollow: 'border-2 border-mid bg-surface',

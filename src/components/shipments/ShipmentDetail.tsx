@@ -2,7 +2,7 @@ import type { ShipmentView, StepView } from '../../domain/types'
 import { t } from '../../i18n/t'
 import type { Audience, Role } from '../../api/contracts'
 import { getPersona } from '../../api/client'
-import { useRecordActivity, useShipments } from '../../data/shipments'
+import { useRecordActivity, useRunAction, useShipments } from '../../data/shipments'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { Label } from '../ui/Label'
@@ -92,19 +92,8 @@ function Timeline({ title, phase, steps, view, role, altIndex = -1 }: TimelinePr
 }
 
 function Actions({ view, role }: { view: ShipmentView; role: Role }) {
-  const record = useRecordActivity(role)
+  const run = useRunAction(role)
   const actions = [...view.actions].sort((a, b) => Number(b.primary) - Number(a.primary))
-  const run = (action: ShipmentView['actions'][number]) => {
-    let docKey: string | undefined
-    if (action.kind === 'upload_document') {
-      // Same choice as the mapper: first missing, else first flagged (the optional e-CMR never counts).
-      const required = view.documents.filter((d) => d.key !== 'cmr')
-      docKey = (required.find((d) => d.status === 'missing') ?? required.find((d) => d.status === 'flagged'))?.key
-      if (docKey) record({ type: 'upload', shipmentId: view.id, docKey })
-    }
-    record({ type: 'act', shipmentId: view.id, actionKey: action.key, docKey })
-    focusDetail(view.id)
-  }
   return (
     <section className="flex flex-col gap-2">
       <Label as="h3">{t('ui.detail.actions')}</Label>
@@ -122,7 +111,10 @@ function Actions({ view, role }: { view: ShipmentView; role: Role }) {
                 size="sm"
                 tone={action.primary ? 'solid-signal' : 'default'}
                 disabled={action.blockedBy !== undefined}
-                onClick={() => run(action)}
+                onClick={() => {
+                  run(view, action)
+                  focusDetail(view.id)
+                }}
               >
                 {t(`action.button.${action.kind}`)}
               </Button>

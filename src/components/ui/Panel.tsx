@@ -5,6 +5,7 @@ export type PanelRadius = 'md' | 'lg'
 export type PanelElement = 'div' | 'section' | 'article'
 
 export type PanelProps = AriaAttributes & {
+  id?: string
   tone?: PanelTone
   radius?: PanelRadius
   as?: PanelElement

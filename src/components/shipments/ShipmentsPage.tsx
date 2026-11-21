@@ -11,7 +11,6 @@ import { Icon } from "../ui/Icon";
 import { SearchField } from "../ui/SearchField";
 import { ToggleButton } from "../ui/ToggleButton";
 import { CustomerNotice } from "./CustomerNotice";
-import { Legend } from "./Legend";
 import { ShipmentList } from "./ShipmentList";
 
 type FilterKey = "delayed" | "incident" | "customs" | "stale" | "review";
@@ -207,7 +206,6 @@ export function ShipmentsPage({ role }: { role: Role }) {
         </section>
       )}
 
-      <Legend audience={audience} />
     </main>
   );
 }

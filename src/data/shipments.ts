@@ -49,3 +49,14 @@ export function useRecordActivity(role: Role): (change: ActivityChange) => void 
     onSuccess: () => client.invalidateQueries({ queryKey: ['shipments'] }),
   }).mutate
 }
+
+/** Upload document targets the first missing (else flagged) required document; the optional e-CMR never counts. */
+export function useRunAction(role: Role): (view: ShipmentView, action: ShipmentView['actions'][number]) => void {
+  const record = useRecordActivity(role)
+  return (view, action) => {
+    const required = view.documents.filter((d) => d.key !== 'cmr')
+    const docKey = action.kind === 'upload_document' ? (required.find((d) => d.status === 'missing') ?? required.find((d) => d.status === 'flagged'))?.key : undefined
+    if (docKey) record({ type: 'upload', shipmentId: view.id, docKey })
+    record({ type: 'act', shipmentId: view.id, actionKey: action.key, docKey })
+  }
+}
