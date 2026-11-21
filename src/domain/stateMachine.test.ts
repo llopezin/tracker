@@ -7,7 +7,7 @@ function run(state: LegState, ...events: LegEvent[]): LegState {
   return events.reduce((s, e) => applyEvent(s, e).state, state)
 }
 
-describe('applyEvent (PRD §8.7)', () => {
+describe('applyEvent', () => {
   it('applied: equal or higher rank; within a rank the state goes back and forth', () => {
     let s = run(initialLegState('road'), act('PICKED_UP', '2026-11-20T08:00:00Z'))
     let r = applyEvent(s, act('ARRIVED_AT_HUB', '2026-11-20T12:00:00Z'))

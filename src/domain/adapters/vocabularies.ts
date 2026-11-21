@@ -1,5 +1,5 @@
-// Per-operator status vocabularies (PRD §6): exact DHL-shaped `events[].status` text → RoadTag, keyed by operator id.
-// Normalisation knowledge, so it lives in the domain. Unknown text → NOT_MAPPED.
+// Per-operator status vocabularies, keyed by operator id: exact DHL-shaped `events[].status` text → RoadTag.
+// Unknown text → NOT_MAPPED.
 import type { RoadTag } from '../types'
 
 export const VOCABULARIES: Record<string, Record<string, RoadTag>> = {

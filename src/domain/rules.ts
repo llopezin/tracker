@@ -1,4 +1,4 @@
-// Deterministic rules (PRD §8). Pure functions: no AI, no `new Date()`; `now` is always passed in.
+// Deterministic rules. Pure: no AI, no `new Date()`; `now` is always passed in.
 import { t } from '../i18n/t'
 import type { ActionKind, EtaValue, EtaView, IncidentType, Mode, Notice, ShipmentView, Health } from './types'
 
@@ -9,13 +9,13 @@ const hoursBetween = (from: string, to: string) => (Date.parse(to) - Date.parse(
 
 const madridDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' })
 
-/** Calendar days from `a` to `b` in Europe/Madrid (PRD §8.2 "días naturales"). */
+/** Calendar days from `a` to `b` in Europe/Madrid. */
 export function calendarDays(a: string, b: string): number {
   const day = (iso: string) => Date.parse(`${madridDay.format(Date.parse(iso))}T00:00:00Z`)
   return Math.round((day(b) - day(a)) / 86_400_000)
 }
 
-// ── §8.1 ETA ──
+// ── ETA ──
 
 export interface EtaInput {
   delivery?: EtaValue          // latest ETA of the last leg (consignee)
@@ -31,7 +31,7 @@ export function eta({ delivery, nextStop, blocked }: EtaInput): EtaView {
   return { scope: 'none' }
 }
 
-// ── §8.2 Delay ──
+// ── Delay ──
 
 export interface DelayInput {
   etaVsCommitment: { eta: string; commitment: string }[] // latest operator ETA per open leg vs its commitment
@@ -56,7 +56,7 @@ export function delay(i: DelayInput): Delay {
   return { delayed: overdue || max !== undefined || i.operatorDelayed, days: max, overdue, delta }
 }
 
-// ── §8.3 Stale ──
+// ── Stale ──
 
 export const STALE_HOURS: Record<Mode, number> = { road: 24, sea: 72 }
 
@@ -65,7 +65,7 @@ export function staleHours(lastEventAt: string, now: string, mode: Mode, applies
   return { stale: applies && hours > STALE_HOURS[mode], hours, threshold: STALE_HOURS[mode] }
 }
 
-// ── §8.4 Health and order ──
+// ── Health and order ──
 
 export interface HealthInput { stale: boolean; hold: boolean; delayed: boolean; missingDocument: boolean; aiPending: boolean; departed: boolean }
 
@@ -86,7 +86,7 @@ export function sortShipments(views: ShipmentView[]): ShipmentView[] {
   return [...views].sort((a, b) => key(a) - key(b) || a.id.localeCompare(b.id))
 }
 
-// ── §8.5 Incidents, actions, tags ──
+// ── Incidents, actions, tags ──
 
 export interface IncidentInput {
   hold?: { place: string }
@@ -164,7 +164,7 @@ export function tags(list: Incident[]): ShipmentView['tags'] {
   return [...new Set(list.flatMap((i) => TAGS[i.type]))]
 }
 
-// ── §8.6 Customer notice ──
+// ── Customer notice ──
 
 const REASON_EVENTS = [t('tag.BREAKDOWN'), t('tag.DELAYED'), t('tag.CUSTOMS_HOLD')]
 
@@ -175,10 +175,7 @@ export function noticeReason(view: Pick<ShipmentView, 'done'>): string | undefin
   return step.event === t('tag.DELAYED') && step.note ? step.note : step.event
 }
 
-/**
- * One banner line per affected shipment. Reads only the view: pending AI is never applied (so it can't cause
- * a delay) and pending/rejected AI steps carry label 'AI', so filtering on 'ACT' keeps operator + accepted AI.
- */
+/** One banner line per affected shipment. Pending/rejected AI steps carry label 'AI', so 'ACT' keeps operator + accepted AI. */
 export function customerNotice(view: ShipmentView): Notice | undefined {
   if (view.delivered) return undefined
   const types = new Set(view.incidents.map((i) => i.type))

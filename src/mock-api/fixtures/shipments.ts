@@ -1,5 +1,5 @@
-// 7 synthetic shipments (PRD §6). Timeline built backwards from NOW = 2026-11-22T10:40+01:00.
-// Raw payloads use the shapes in docs/api-responses.md. All names and numbers are invented.
+// 7 synthetic shipments, timeline built backwards from NOW (2026-11-22T10:40+01:00).
+// Raw payloads follow docs/api-responses.md.
 import type { Place } from "../../domain/types";
 import type { ShipmentPayload } from "../../api/contracts";
 
@@ -336,13 +336,13 @@ const acm24755: ShipmentPayload = {
         },
       ],
     },
-    // Carrier haulage leg: no feed yet (Meridia is the only operator listed for this shipment).
+    // Carrier haulage leg: no feed yet.
     { emailIds: [], raw: [{ format: "dhl", data: { id: "MRD-CH-3302", events: [] } }] },
   ],
 };
 
 // ── ACM-24817 · Moncayo → Nordhaven → Terminal Golfo (hold) → Logística Bajío ──
-// Arrival planned 16 Nov, actual 18 Nov (plan missed). Hold seen by Terminal API (checked 22 Nov) and Aduanas Golfo email (accepted).
+// Arrival planned 16 Nov, actual 18 Nov. Hold reported by the Terminal API and by the (accepted) Aduanas Golfo email.
 const ARRIVED_24817 = "2026-11-18T06:20:00Z"; // same string in DCSA ARRI ACT and Terminal49 pod_arrived_at
 const acm24817: ShipmentPayload = {
   record: {
@@ -549,7 +549,7 @@ const acm24866: ShipmentPayload = {
         },
       ],
     },
-    // Carrier haulage leg: no feed yet (Nordhaven is the only operator listed for this shipment).
+    // Carrier haulage leg: no feed yet.
     { emailIds: [], raw: [{ format: "dhl", data: { id: "NDH-CH-1204", events: [] } }] },
   ],
 };

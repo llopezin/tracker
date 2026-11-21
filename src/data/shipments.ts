@@ -1,5 +1,5 @@
-// Shipments of a role, fetched and mapped once into what the UI renders. Components read them through a selector,
-// so each one re-renders only when its slice changes (structural sharing keeps unchanged rows at the same reference).
+// Shipments of a role, fetched and mapped into what the UI renders. Components read them through a selector,
+// so each re-renders only when its slice changes.
 import { QueryClient, queryOptions, useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import type { ActivityChange, AiReading, Email, Role } from '../api/contracts'
 import { fetchShipments, getPersona, interpretText, recordActivity } from '../api/client'
@@ -9,10 +9,10 @@ import type { Notice, ShipmentView } from '../domain/types'
 
 export const queryClient = new QueryClient()
 
-/** A failed AI read counts as unreadable (→ NOT_MAPPED) instead of failing every shipment; it is retried on the next fetch. */
+/** A failed AI read counts as unreadable (→ NOT_MAPPED) instead of failing every shipment; retried on the next fetch. */
 const UNREAD: AiReading = { milestone: null, confidence: 0, quote: '', readAs: '' }
 
-/** Each email is read by the AI once per page load (PRD §9), even when the shipments are fetched again. */
+/** Each email is read by the AI once per page load, even when shipments are refetched. */
 const readEmail = (email: Email) =>
   queryClient
     .ensureQueryData({ queryKey: ['emailReading', email.id], queryFn: () => interpretText(email.body), gcTime: Infinity })
@@ -29,8 +29,7 @@ export const shipmentsQuery = (role: Role) =>
         getPersona(role).audience,
       )
     },
-    // Stale on arrival, so every visit fetches fresh. Dropped 1 s after the page unmounts (0 would drop the loader's
-    // data before the page subscribes; Suspense enforces 1 s anyway).
+    // Dropped 1 s after the page unmounts: 0 would drop the loader's data before the page subscribes.
     gcTime: 1000,
   })
 

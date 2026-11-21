@@ -1,4 +1,4 @@
-// Per-leg state machine (PRD §8.7). Pure TS: dates are compared with Date.parse on ISO strings.
+// Per-leg state machine. Dates are compared with Date.parse on ISO strings.
 import type { Mode, OrderResult, RoadTag, SeaTag, StatusUpdate } from "./types";
 
 type Tag = RoadTag | SeaTag;
@@ -78,7 +78,7 @@ export function applyEvent(
   const seen = [...state.seen, { tag, at }];
 
   if (state.closed) {
-    // Closed leg (final, CANCELLED or closed by the next leg) applies nothing; EMPTY_RETURNED is still recorded.
+    // A closed leg applies nothing; EMPTY_RETURNED is still recorded.
     return tag === "EMPTY_RETURNED"
       ? { state: { ...state, seen }, result: "applied" }
       : { state, result: "history" };

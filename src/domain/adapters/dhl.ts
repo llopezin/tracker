@@ -16,7 +16,7 @@ export function mapDhl(raw: DhlShipment, operator: { id: string; name: string },
 
   const updates = events.map((ev, i): Update => {
     let tag: Tag | 'NOT_MAPPED' = vocabulary?.[ev.status] ?? 'NOT_MAPPED'
-    // Cross-check (data-model §3): a `delivered` statusCode must map to DELIVERED.
+    // Cross-check: a `delivered` statusCode must map to DELIVERED.
     if (ev.statusCode === 'delivered' && tag !== 'DELIVERED') tag = 'NOT_MAPPED'
     return {
       id: `${idPrefix}/${i}`,

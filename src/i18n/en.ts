@@ -1,5 +1,4 @@
-// All visible text. Read with t('key', params). A new language is a new file with the same keys.
-// Sections: tag.* / label.* / incident.* / action.* / notice.* (domain) — ui.* (components/routes).
+// All visible text, read with t('key', params). Domain keys: tag.*, label.*, incident.*, action.*, notice.*; UI keys: ui.*.
 
 export const en = {
   // Milestones (RoadTag ∪ SeaTag ∪ derived)
@@ -35,7 +34,7 @@ export const en = {
   'tag.NOT_MAPPED': 'Unknown operator status',
   'tag.NOT_DEPARTED': 'Not departed yet',
 
-  // Date labels per audience (PRD §10)
+  // Date labels per audience
   'label.ops.ACT': 'ACT',
   'label.ops.EST': 'EST',
   'label.ops.PLN': 'PLN',
@@ -48,7 +47,7 @@ export const en = {
   'label.customer.PLN': 'Planned',
   'label.customer.NA': 'Not known yet',
 
-  // Incidents (PRD §8.5)
+  // Incidents
   'incident.customs_hold': 'Held at customs · {place}',
   'incident.missing_document': '{document} missing',
   'incident.delay': 'Delayed {delta}',
@@ -56,7 +55,7 @@ export const en = {
   'incident.stale': 'No update for {hours} h (threshold {threshold} h)',
   'incident.unmapped': 'Unknown operator status from {operator}',
 
-  // Actions (PRD §8.5) — template texts with shipment data
+  // Actions: templates filled with shipment data
   'action.upload_document': 'Upload {document} for {id}.',
   'action.notify_customer': 'Tell {customer} that {id} is affected: {reason}.',
   'action.contact_operator': 'Ask {operator} for a status update on {id}.',
@@ -66,7 +65,7 @@ export const en = {
   'action.done': 'Done by {by} · {time}',
   'action.blocked': 'Review the AI-read update first',
 
-  // Customer notice banner (PRD §8.6) — fields, not sentences
+  // Customer notice banner: fields, not sentences
   'notice.late': '+{days} d late',
   'notice.overdue': 'Overdue',
   'notice.customs': 'Held at customs',
@@ -74,7 +73,7 @@ export const en = {
   'notice.delta': '+{days} d',
   'notice.delayed': 'Delayed',
 
-  // Source of next steps that come from the internal plan (PRD §12 "each step shows its source")
+  // Source of next steps that come from the internal plan
   'source.plan.label': 'Internal plan',
   'source.plan.operator': 'Acme',
 

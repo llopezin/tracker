@@ -1,4 +1,3 @@
-// Types and helpers shared by the adapters.
 import type { RoadTag, SeaTag, StatusUpdate } from '../types'
 
 export type Tag = RoadTag | SeaTag

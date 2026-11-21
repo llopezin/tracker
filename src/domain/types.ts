@@ -1,4 +1,4 @@
-// Copied from docs/data-model.md §2, §4, §5. Do not add fields here without updating data-model.md.
+// Mirrors docs/data-model.md: update it when adding fields here.
 
 export type Mode = 'road' | 'sea'
 export type Confidence = 'ACTUAL' | 'ESTIMATED' | 'PLANNED'
@@ -97,7 +97,7 @@ export interface Shipment {
   lastUpdateAt: string
 }
 
-// §4 Internal record
+// Internal record
 export interface ShipmentRecord {
   id: string
   description: string
@@ -122,8 +122,8 @@ export interface ShipmentRecord {
   }[]
 }
 
-// §5 View model
-/** Shipment health: the single most important state for the glance (PRD §8.4, first match wins). `pre` = not departed, `ai` = AI read waiting for review. */
+// View model
+/** The shipment's most important state (first match wins). `pre` = not departed, `ai` = AI read awaiting review. */
 export type Health = 'ok' | 'delay' | 'risk' | 'ai' | 'stale' | 'pre'
 export type IncidentType = 'customs_hold' | 'missing_document' | 'delay' | 'ai_pending' | 'stale' | 'unmapped'
 export type ActionKind = 'upload_document' | 'notify_customer' | 'contact_operator'
@@ -192,7 +192,7 @@ export interface ShipmentView {
   deliveredAt?: string
 }
 
-// Customer notice line (PRD §8.6). Not in data-model.md: computed by rules.customerNotice.
+// Customer notice line, computed by rules.customerNotice. Not in data-model.md.
 export interface Notice {
   shipmentId: string
   kind: 'late' | 'overdue' | 'customs'

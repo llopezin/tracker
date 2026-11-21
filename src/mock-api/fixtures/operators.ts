@@ -1,4 +1,4 @@
-// Operator registry as the backend returns it. Status vocabularies are domain knowledge: domain/adapters/vocabularies.ts.
+// Operator registry as the backend returns it. Status vocabularies live in domain/adapters/vocabularies.ts.
 import type { Operator } from '../../api/contracts'
 
 export const OPERATORS: Record<string, Operator> = {

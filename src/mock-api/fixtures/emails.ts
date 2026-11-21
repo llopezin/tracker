@@ -25,10 +25,7 @@ export const EMAILS: Email[] = [
   },
 ]
 
-/**
- * Initial review state (PRD §6 "Estado inicial"): the Aduanas Golfo reading is accepted; TransPirineo stays pending.
- * Keyed by the AI update id (`ai:<emailId>`, domain/adapters/email.ts `aiUpdateId`).
- */
+/** Initial reviews: Aduanas Golfo accepted, TransPirineo pending. Keyed by AI update id (`aiUpdateId`). */
 export const initialAiReviews: Activity['aiReviews'] = {
   'ai:email-aduanas-24817': { review: 'accepted', by: 'ops@acme.com', at: '2026-11-20T09:15:00+01:00' },
 }

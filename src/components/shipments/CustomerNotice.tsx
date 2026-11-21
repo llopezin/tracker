@@ -18,7 +18,7 @@ const statusText = (n: Notice) =>
     ? n.days ? t('notice.late', { days: n.days }) : t('notice.delayed')
     : t(n.kind === 'overdue' ? 'notice.overdue' : 'notice.customs')
 
-/** PRD §8.6: one line per affected shipment, fields not sentences. */
+/** One line per affected shipment: fields, not sentences. */
 export function CustomerNotice({ role, onSelect }: CustomerNoticeProps) {
   const notices = useNotices(role)
   if (notices.length === 0) return null

@@ -1,4 +1,4 @@
-// Golden test over the 7 fixtures (PRD §6 table, §12 demo). Same path as the app: api client → mapShipments.
+// Golden test over the 7 fixtures, through the same path as the app: api client → mapShipments.
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Activity, Audience, ShipmentsResponse } from '../api/contracts'
 import { fetchShipments, interpretText } from '../api/client'
@@ -50,7 +50,7 @@ const GOLDEN: Row[] = [
     incidents: [], actions: [] },
 ]
 
-describe('mapShipment golden (PRD §6)', () => {
+describe('mapShipment golden', () => {
   it.each(GOLDEN)('$id', (row) => {
     const v = view(row.id)
     expect({
@@ -67,7 +67,7 @@ describe('mapShipment golden (PRD §6)', () => {
     }
   })
 
-  it('every done and next step shows at least one source (PRD §12)', () => {
+  it('every done and next step shows at least one source', () => {
     for (const v of views()) {
       for (const s of [...v.done, ...v.next]) expect(s.sources.length, `${v.id} ${s.event}`).toBeGreaterThan(0)
     }
@@ -108,7 +108,7 @@ describe('mapShipment golden (PRD §6)', () => {
   })
 })
 
-describe('demo transitions (PRD §12)', () => {
+describe('demo transitions', () => {
   it('accept the TransPirineo reading → ETA Tue 24, Mon 23 struck, +1 d, notice', () => {
     const accepted = { ...initial, aiReviews: { ...initial.aiReviews, [AI_24790]: { review: 'accepted' as const, ...BY } } }
     const v = view('ACM-24790', accepted)

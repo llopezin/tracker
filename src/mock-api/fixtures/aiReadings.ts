@@ -1,4 +1,4 @@
-// Fixed AI readings per email id (PRD §9). The mock AI answers from this map; unknown text reads as nothing.
+// Fixed AI readings per email id. Unknown text reads as nothing.
 import type { AiReading } from '../../api/contracts'
 
 export const AI_READINGS: Record<string, AiReading> = {

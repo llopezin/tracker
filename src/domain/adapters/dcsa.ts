@@ -1,6 +1,4 @@
-// DCSA T&T events → status updates + ETAs. Tags come only from the fixed DCSA code table;
-// any other code is NOT_MAPPED. ACT / EST / PLN all become updates with their confidence; only the state machine
-// decides what ACT moves.
+// DCSA T&T events → status updates + ETAs. Tags come only from the DCSA code table; any other code is NOT_MAPPED.
 import type { DcsaClassifier, DcsaEventsResponse } from '../../api/contracts'
 import type { Confidence, EtaValue, SeaTag, Source } from '../types'
 import { byTime, type Update } from './shared'

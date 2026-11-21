@@ -22,7 +22,7 @@ const colorClasses: Partial<Record<StepLabel, string>> = {
 
 const variantClasses = { step: 'text-meta', eta: 'text-body font-semibold' } as const
 
-/** Label chip (ACT/EST/… for ops, words for customers) + formatted date. */
+/** Label chip (ACT/EST/… for ops, words for customers) and formatted date. */
 export function DateLabel({ label, audience, date, to, dateOnly, variant = 'step' }: DateLabelProps) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">

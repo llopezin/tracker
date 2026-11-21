@@ -1,6 +1,5 @@
-// Raw shipments of a role + AI readings + ops activity → ShipmentView[] for that audience, in list order (PRD §7, §8.4).
-// Pure. Each leg's payloads go through their operator adapter (adapters/); the state machine then orders every update across legs.
-// Customers never get AI, UNKNOWN or IGNORED steps, rejected AI, aiAlternative or actions (PRD §9, §10).
+// Raw shipments + AI readings + ops activity → ShipmentView[] for the audience, in list order.
+// Customers never get AI, UNKNOWN or IGNORED steps, rejected AI, aiAlternative or actions.
 import type { Activity, AiReading, Audience, ShipmentPayload, ShipmentsResponse } from '../api/contracts'
 import { t } from '../i18n/t'
 import { NOW } from './clock'
@@ -70,7 +69,7 @@ function mapShipment(payload: ShipmentPayload, data: ShipmentsData, audience: Au
   const stale = rules.staleHours(lastEventAt, now, cur.rec.mode, !delivered && departed)
 
   const documents = record.documents.map((d) => (activity.uploadedDocs[`${record.id}:${d.key}`] ? { ...d, status: 'uploaded' as const } : d))
-  // e-CMR is optional and never raises an incident or an upload (PRD §8.5).
+  // e-CMR is optional: it never raises an incident or an upload.
   const required = documents.filter((d) => d.key !== OPTIONAL_DOC)
   const missing = required.filter((d) => d.status === 'missing')
 

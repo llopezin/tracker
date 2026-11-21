@@ -78,7 +78,7 @@ export function ShipmentsPage({ role }: { role: Role }) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   const [showDelivered, setShowDelivered] = useState(false);
 
-  // The API already applied the perimeter: lists, counters, banner and search see only what it returned.
+  // The API already applied the perimeter: everything below sees only what it returned.
   const views = useShipments(role, selectList);
   const counts = Object.fromEntries(
     filters.map((f) => [f.key, views.filter((v) => !v.delivered && f.match(v)).length]),

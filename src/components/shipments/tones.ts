@@ -7,7 +7,7 @@ import type { IconTileTone } from '../ui/IconTile'
 import type { TagTone } from '../ui/Tag'
 import type { TimelineItemTone } from '../ui/TimelineItem'
 
-// Single mapping domain → ui variants. Texts are i18n keys, never literals.
+// Domain → UI variants. Texts are i18n keys.
 
 export const labelChip: Record<StepLabel, ChipTone> = {
   ACT: 'solid',
@@ -19,7 +19,7 @@ export const labelChip: Record<StepLabel, ChipTone> = {
   IGNORED: 'dashed-muted',
 }
 
-/** Customers only ever get ACT/EST/PLN/NA (mapShipments strips the rest for them). */
+/** Customers only get ACT/EST/PLN/NA (mapShipments strips the rest). */
 export function labelKey(label: StepLabel, audience: Audience): MessageKey {
   if (audience === 'ops') return `label.ops.${label}`
   return label === 'ACT' || label === 'EST' || label === 'PLN' ? `label.customer.${label}` : 'label.customer.NA'

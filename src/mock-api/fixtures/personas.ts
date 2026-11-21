@@ -1,4 +1,4 @@
-// The 3 demo personas (PRD §5). No login: each route signs in as one of them.
+// The 3 demo personas. No login: each route signs in as one of them.
 import type { Persona, Role } from '../../api/contracts'
 import { ACCOUNTS } from './shipments'
 

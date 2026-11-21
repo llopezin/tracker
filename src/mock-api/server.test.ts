@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Role } from '../api/contracts'
 import { getShipments } from './server'
 
-describe('fake server perimeter (PRD §5)', () => {
+describe('fake server perimeter', () => {
   it.each<[Role, string[], string[], string[]]>([
     ['ops', ['ACM-24812', 'ACM-24801', 'ACM-24790', 'ACM-24755', 'ACM-24817', 'ACM-24866', 'ACM-24844'],
       ['email-transpirineo-24790', 'email-aduanas-24817'], ['ai:email-aduanas-24817']],

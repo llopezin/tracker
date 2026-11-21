@@ -32,7 +32,7 @@
   --color-signal-border: #F3B48C;
   --color-signal-wash: #FFF8F3;
 
-  /* Notice pills: amber (late/overdue) and red (customs). fg on soft ≥ 6:1 (AA). */
+  /* Notice pills: amber (late), red (customs). fg on soft ≥ 6:1 (AA). */
   --color-warning-fg: #854D0E;
   --color-warning-soft: #FEF3C7;
   --color-danger-fg: #991B1B;

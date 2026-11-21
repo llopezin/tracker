@@ -1,6 +1,5 @@
-// Operator adapters (PRD §7): one per wire format, each turns one raw payload of a leg into status updates and ETAs.
-// `mapLeg` runs the adapters of one leg and merges their output; the shipment mapper then orders every update
-// across legs with the state machine and builds the view.
+// Operator adapters, one per wire format: each turns one raw payload of a leg into status updates and ETAs.
+// mapShipments then orders the updates of every leg with the state machine.
 import type { AiReading, ShipmentPayload, ShipmentsResponse } from '../../api/contracts'
 import { initialLegState, type LegState } from '../stateMachine'
 import type { EtaValue, ShipmentRecord } from '../types'

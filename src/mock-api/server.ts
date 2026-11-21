@@ -1,5 +1,5 @@
-// Fake backend. Every call is scoped to the role's perimeter (PRD §5) and answers with a copy after a small
-// delay (0 under Vitest), so the frontend never holds an out-of-perimeter shipment. Activity lives in memory: lost on reload.
+// Fake backend. Every call is scoped to the role's perimeter and returns a copy after a small delay (0 under Vitest).
+// Activity lives in memory and is lost on reload.
 import type { Activity, ActivityChange, AiReading, Persona, Role, ShipmentsResponse } from '../api/contracts'
 import { NOW } from '../domain/clock'
 import { AI_READINGS, UNREADABLE } from './fixtures/aiReadings'

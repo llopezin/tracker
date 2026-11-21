@@ -1,5 +1,4 @@
-// Wire types the backend returns (today served by mock-api/ through api/client.ts).
-// Raw provider shapes are copied from docs/api-responses.md (DHL, DCSA, Terminal49 only).
+// Wire types the backend returns. Raw provider shapes are copied from docs/api-responses.md.
 import type { RoadTag, SeaTag, ShipmentRecord } from '../domain/types'
 
 // ── DHL Shipment Tracking Unified API ──
@@ -148,7 +147,7 @@ export interface ShipmentPayload {
   rawUpdates: LegRawUpdates[]
 }
 
-// ── Operator registry (status vocabularies live in domain/adapters/vocabularies.ts) ──
+// ── Operator registry ──
 export type RawFormat = 'dhl' | 'dcsa' | 'terminal49' | 'email'
 
 export interface Operator {
@@ -158,7 +157,7 @@ export interface Operator {
   format: RawFormat
 }
 
-// ── AI reading of one email (PRD §9) ──
+// ── AI reading of one email ──
 export interface AiReading {
   milestone: RoadTag | SeaTag | null
   at?: string
@@ -170,7 +169,7 @@ export interface AiReading {
 }
 
 // ── Shipments of a role, as one response ──
-/** What ops did to the role's shipments (PRD §5), held by the backend. */
+/** What ops did to the role's shipments, held by the backend. */
 export interface Activity {
   aiReviews: Record<string, { review: 'accepted' | 'rejected'; by: string; at: string }> // by AI update id
   actionsDone: Record<string, { by: string; at: string; docKey?: string }> // by `${shipmentId}:${actionKey}`; docKey = uploaded document
@@ -189,7 +188,7 @@ export interface ShipmentsResponse {
   activity: Activity
 }
 
-// ── Demo identity (PRD §5); stands in for the logged-in user ──
+// ── Demo identity: stands in for the logged-in user ──
 export type Role = 'ops' | 'subsidiary' | 'customer'
 export type Audience = 'ops' | 'customer'
 

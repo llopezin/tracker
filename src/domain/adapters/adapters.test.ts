@@ -1,4 +1,3 @@
-// One describe per operator adapter (wire format) in adapters/.
 import { describe, expect, it } from 'vitest'
 import type { DcsaEventsResponse, DhlShipment, T49ContainerResponse } from '../../api/contracts'
 import { interpretText } from '../../api/client'
