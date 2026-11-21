@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  --color-page: #F3F4F5;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #EEF0F2;
+  --color-surface-subtle: #F8F9FA;
+  --color-surface-hover: #FBFBFC;
+  --color-divider: #E6E8EB;
+  --color-border: #DCDFE3;
+  --color-border-strong: #C6CBD1;
+  --color-border-control: #BFC4CA;
+  --color-border-dash: #7D858E;
+  --color-mid: #8A929B;
+  --color-fg: #15191E;
+  --color-fg-soft: #2B3138;
+  --color-fg-muted: #49515A;
+  --color-fg-subtle: #5E6670;
+  --color-on-solid: #FFFFFF;
+
+  --color-accent: #1F5FA8;
+  --color-accent-strong: #174A85;
+  --color-accent-soft: #E7EFF8;
+
+  --color-signal: #C2410C;
+  --color-signal-strong: #A3360A;
+  --color-signal-fg: #9A3412;
+  --color-signal-soft: #FDEDE3;
+  --color-signal-border: #F3B48C;
+  --color-signal-wash: #FFF8F3;
+
+  /* Notice pills: amber (late/overdue) and red (customs). fg on soft ≥ 6:1 (AA). */
+  --color-warning-fg: #854D0E;
+  --color-warning-soft: #FEF3C7;
+  --color-danger-fg: #991B1B;
+  --color-danger-soft: #FEE2E2;
+
+  --color-bar-ok: #2E6FBA;     --color-bar-ok-2: #9FC0E4;
+  --color-bar-signal: #D9550F; --color-bar-signal-2: #F0A274;
+  --color-track: #D0D5DB;      --color-track-2: #ECEEF1;
+
+  --text-chip: 10.5px;    --text-chip--line-height: 16px;
+  --text-label: 11px;     --text-label--line-height: 1.45;
+  --text-caption: 11.5px; --text-caption--line-height: 1.45;
+  --text-note: 12px;      --text-note--line-height: 1.45;
+  --text-meta: 12.5px;    --text-meta--line-height: 1.45;
+  --text-ui: 13px;        --text-ui--line-height: 1.45;
+  --text-body: 13.5px;    --text-body--line-height: 1.45;
+  --text-title: 22px;     --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.01em; --text-title--font-weight: 600;
+  --tracking-label: 0.06em;
+  --tracking-chip: 0.03em;
+
+  --radius-chip: 3px;
+}
+
+/* ModeBar: pattern (road/sea/port) × palette (track/ok/signal/muted/solid). */
+@utility bar-road { background-color: var(--bar-a); }
+@utility bar-sea  { background-image: repeating-linear-gradient(135deg, var(--bar-a) 0 3px, var(--bar-b) 3px 6px); }
+@utility bar-port { background-image: repeating-linear-gradient(90deg, var(--bar-a) 0 2px, var(--bar-b) 2px 4px); }
+@utility bar-track  { --bar-a: var(--color-track);      --bar-b: var(--color-track-2); }
+@utility bar-ok     { --bar-a: var(--color-bar-ok);     --bar-b: var(--color-bar-ok-2); }
+@utility bar-signal { --bar-a: var(--color-bar-signal); --bar-b: var(--color-bar-signal-2); }
+@utility bar-muted  { --bar-a: var(--color-mid);        --bar-b: var(--color-border-strong); }
+@utility bar-solid  { --bar-a: var(--color-fg);         --bar-b: var(--color-fg); }
+
+@layer base {
+  body {
+    @apply bg-page text-fg text-body;
+  }
+
+  a {
+    color: var(--color-accent);
+  }
+
+  a:hover {
+    color: var(--color-accent-strong);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}

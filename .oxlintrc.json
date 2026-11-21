@@ -1,0 +1,58 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "ignorePatterns": ["src/routeTree.gen.ts"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+  "overrides": [
+    {
+      "files": ["src/routes/**", "src/data/**"],
+      "rules": { "react/only-export-components": "off" }
+    },
+    {
+      "files": ["src/api/contracts.ts", "src/data/**", "src/components/**", "src/routes/**", "src/i18n/**", "src/main.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "regex": "(^|/)mock-api(/|$)", "message": "App code reaches the backend only through api/client." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/domain/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "regex": "(^|/)mock-api(/|$)", "message": "The domain never sees the mock backend." },
+            { "regex": "(^|/)api/client$", "message": "The domain is pure: the shipments query (data/shipments.ts) fetches." },
+            { "regex": "(^|/)(data|components|routes)(/|$)", "message": "The domain does not depend on the app." },
+            { "regex": "(^|/)api/contracts$", "allowTypeImports": true, "message": "Use `import type` from api/contracts." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/mock-api/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "regex": "(^|/)(api/client|data|components|routes)(/|$)", "message": "The mock backend does not depend on the app." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/**/*.test.ts"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "group": ["**/mock-api/*", "!**/mock-api/fixtures"], "message": "Tests import mock-api/fixtures/** or go through api/client." }
+          ]
+        }]
+      }
+    }
+  ]
+}
