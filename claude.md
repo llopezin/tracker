@@ -41,18 +41,18 @@ src/
     rules.ts       eta, delay/delta, stale, health, incidents, actions, customerNotice, sortShipments
     mapShipment.ts mapShipments(raw shipments + AI readings + activity, audience) → ShipmentView[] in list order
     clock.ts
-  data/shipments.ts  TanStack Query: shipmentsQuery(role), useShipments / useShipment / useNotices selectors, useRecordActivity
+  data/shipments.ts  TanStack Query: shipmentsQuery(role), useShipments / useNotices selectors, useRecordActivity
   i18n/en.ts
   routes/          /, /ops, /subsidiary, /customer 
   components/      use the design-system library; don't create primitives that already exist
 ```
 
-Flow: route loader → `queryClient.fetchQuery(shipmentsQuery(role))` (refetches if invalidated) → queryFn: `fetchShipments(role)` + `interpretText` per email → `mapShipments` (adapters/mapLeg per leg → state machine → rules) → `ShipmentView[]` for the role's audience → components. Components only read `ShipmentView`.
+Flow: route loader → `queryClient.fetchQuery(shipmentsQuery(role))` (always fetches fresh: data is stale on arrival) → queryFn: `fetchShipments(role)` + `interpretText` per email → `mapShipments` (adapters/mapLeg per leg → state machine → rules) → `ShipmentView[]` for the role's audience → components. Components only read `ShipmentView`.
 
 ## Data and state (TanStack Query)
 
-- **Query:** one query per role, `['shipments', role]`, `staleTime: Infinity`. Its data is already UI-ready: customer audiences never receive AI, UNKNOWN, IGNORED, rejected AI, `aiAlternative` or `actions` (applied inside `mapShipments`). Each email's AI reading is cached under `['emailReading', id]`, so it runs once per page load.
-- **Selectors:** components call `useShipments(role, select)` (stable selectors), `useShipment(role, id)` or `useNotices(role)`, so each re-renders only when its slice changes. The page selects only the fields it filters on; rows and detail select their own shipment by id.
+- **Query:** one query per role, `['shipments', role]`, default `staleTime` (0) and `gcTime: 1000`: every visit to a role fetches fresh, and a role's data is dropped 1 s after you leave it. Its data is already UI-ready: customer audiences never receive AI, UNKNOWN, IGNORED, rejected AI, `aiAlternative` or `actions` (applied inside `mapShipments`). Each email's AI reading is cached under `['emailReading', id]`, with `gcTime: Infinity`, so it runs once per page load (the only cache kept across visits).
+- **Selectors:** components call `useShipments(role, select)` (stable or inline selectors, e.g. `(list) => list.find((s) => s.id === id)!`) or `useNotices(role)`, so each re-renders only when its slice changes. The page selects only the fields it filters on; rows and detail select their own shipment by id.
 - **Activity:** AI reviews, uploads and actions done are held by the (mock) backend, seeded with the stored Aduanas Golfo review and lost on reload. `useRecordActivity(role)` sends a change and invalidates `['shipments']`, so every role sees it.
 - The perimeter is applied by the API, never in the UI. Search, filters and expanded rows are local `useState`.
 

@@ -193,3 +193,7 @@ Not changed, deliberately:
 
 ## 14. Adapters folder (2026-11-20)
 - **`domain/adapters/`:** `domain/operators.ts` split into one file per wire format (`dhl.ts`, `dcsa.ts`, `terminal49.ts`, `email.ts`), plus `index.ts` with `mapLeg` (moved out of `mapShipment.ts`) and `shared.ts` (`Tag`, `Update`, `byTime`). `vocabularies.ts` sits next to the DHL adapter. Same logic and update ids; `operators.test.ts` → `adapters/adapters.test.ts`. Inside `domain/` so the domain keeps no dependency outside itself.
+
+## 15. No cache for shipments (2026-11-21)
+- `shipmentsQuery` drops `staleTime: Infinity` (default 0) and sets `gcTime: 1000`: shipments change on their own in production, so every visit to a role fetches fresh (the loader's `fetchQuery` waits, `PageLoading` shows briefly) and a role's data is dropped 1 s after its page unmounts. `gcTime: 0` would drop the loader's data before the page subscribes (extra fetch and a suspense flash); Suspense enforces 1 s anyway. Roles never share an entry (`['shipments', role]`).
+- `['emailReading', id]` keeps `gcTime: Infinity`: the AI reads each email once per page load. It is the only entry kept across visits.

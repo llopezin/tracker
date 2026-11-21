@@ -29,7 +29,9 @@ export const shipmentsQuery = (role: Role) =>
         getPersona(role).audience,
       )
     },
-    staleTime: Infinity, // changes only through recordActivity, which refetches
+    // Stale on arrival, so every visit fetches fresh. Dropped 1 s after the page unmounts (0 would drop the loader's
+    // data before the page subscribes; Suspense enforces 1 s anyway).
+    gcTime: 1000,
   })
 
 export const useShipments = <T>(role: Role, select: (shipments: ShipmentView[]) => T): T =>

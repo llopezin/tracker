@@ -26,8 +26,8 @@ customerNotice(view) (rules.ts) → Notice | undefined                  // useNo
 ## State (TanStack Query)
 ```ts
 // data/shipments.ts
-shipmentsQuery(role)                    // ['shipments', role], staleTime: Infinity; route loaders fetchQuery it (refetches once invalidated)
-useShipments(role, select) / useShipment(role, id) / useNotices(role)
+shipmentsQuery(role)                    // ['shipments', role], stale on arrival, gcTime: 1000; route loaders fetchQuery it (fresh on every visit)
+useShipments(role, select) / useNotices(role)   // rows and detail pass (list) => list.find((s) => s.id === id)!
 useRecordActivity(role) → (change: ActivityChange) => void   // backend stamps by/at, then invalidates ['shipments']
 ```
 
