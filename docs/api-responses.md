@@ -56,8 +56,8 @@ interface DhlPlace {
 interface DhlStatus {
   timestamp: string;                 // ISO 8601, required
   statusCode: DhlStatusCode;         // required
+  status: string;                    // short title; free text or code, varies by division
   location?: DhlPlace;
-  status?: string;                   // short title; free text or code, varies by division
   statusDetailed?: string;           // e.g. "PARCV_NRQRD_VA"
   description?: string;
   remark?: string;
@@ -83,9 +83,8 @@ interface DhlShipment {
   destination?: DhlPlace;
   status?: DhlStatus;                // current status
   pickUpDate?: string;               // ISO 8601
-  estimatedTimeOfDelivery?: string;  // ISO 8601
   agreedDeliveryDate?: string;       // ISO 8601
-  estimatedDeliveryTimeFrame?: { estimatedFrom?: string; estimatedThrough?: string };
+  estimatedDeliveryTimeFrame?: { estimatedFrom: string; estimatedThrough?: string }; // window, or a single date without estimatedThrough
   estimatedTimeOfDeliveryRemark?: string;
   serviceUrl?: string;
   rerouteUrl?: string;
@@ -105,7 +104,7 @@ interface DhlShipment {
     references?: { number?: string; type: DhlReferenceType }[];
     shipmentActivationDate?: string;
   };
-  events?: DhlEvent[];               // history
+  events: DhlEvent[];                // history; [] when there is none
 }
 
 interface DhlTrackingResponse {
@@ -403,8 +402,8 @@ interface T49Container {
     created_at?: string;
     current_status?: T49ContainerStatus;
     availability_known?: boolean;
-    available_for_pickup?: boolean | null;
-    holds_at_pod_terminal?: T49Hold[];
+    available_for_pickup: boolean;   // false while any hold is active
+    holds_at_pod_terminal: T49Hold[];
     fees_at_pod_terminal?: T49Fee[];
     pickup_lfd?: string | null;      // coalesced: line > terminal > rail (not the earliest)
     import_deadlines?: {
@@ -430,7 +429,7 @@ interface T49Container {
     pod_timezone?: string | null;        // IANA
     final_destination_timezone?: string | null;
     empty_terminated_timezone?: string | null;
-    terminal_checked_at?: string | null;
+    terminal_checked_at: string;     // when the terminal was read
     pod_last_tracking_request_at?: string | null;
     shipment_last_tracking_request_at?: string | null;
   };
@@ -515,13 +514,24 @@ interface VizionUpdate {
 
 ```ts
 type DcsaClassifier = 'ACT' | 'PLN' | 'EST';
+type DcsaEventType = 'TRANSPORT' | 'EQUIPMENT' | 'SHIPMENT';
+
+interface DcsaTransportCall {
+  UNLocationCode: string;
+  location: { locationName: string };
+  carrierVoyageNumber?: string;
+  vessel?: { vesselName: string; vesselIMONumber?: string };
+}
 
 interface DcsaEvent {
+  eventID: string;
+  eventType: DcsaEventType;          // family of the code
   eventTypeCode: string;             // DEPA, ARRI, GTIN, LOAD, DISC, GTOT, CONF, INSP, ...
   eventClassifierCode: DcsaClassifier;
   eventDateTime: string;             // when it happened, or will happen (PLN/EST)
   eventCreatedDateTime: string;      // when the record was created
-  location: { locationName: string; UNLocationCode: string };
+  transportCall: DcsaTransportCall;  // port of the event, with voyage and vessel
+  equipmentReference?: string;       // container number, on EQUIPMENT events
   delayReasonCode?: string;          // SMDG delay reason code, max 3, e.g. "WEA"
 }
 
@@ -584,7 +594,6 @@ const mockDhl: DhlTrackingResponse = {
       status: 'Departed from facility', description: 'The shipment has left the facility',
       location: { address: { addressLocality: 'Barcelona', countryCode: 'ES' } },
     },
-    estimatedTimeOfDelivery: '2026-11-23T14:00:00+01:00',
     estimatedDeliveryTimeFrame: { estimatedFrom: '2026-11-23T12:00:00+01:00', estimatedThrough: '2026-11-23T16:00:00+01:00' },
     estimatedTimeOfDeliveryRemark: 'Delivery expected in the afternoon',
     events: [
@@ -658,15 +667,16 @@ const mockTerminal49: T49ContainerResponse = {
     pod_arrived_at: '2026-11-18T06:20:00Z', pod_discharged_at: '2026-11-18T21:05:00Z',
     pickup_lfd: '2026-11-25T06:00:00Z',
     import_deadlines: { pickup_lfd_line: '2026-11-25T06:00:00Z', pickup_lfd_terminal: '2026-11-23T06:00:00Z', pickup_lfd_rail: null },
-    ind_eta_at: null, pod_timezone: 'America/Mexico_City',
+    ind_eta_at: null, pod_timezone: 'America/Mexico_City', terminal_checked_at: '2026-11-22T08:30:00Z',
   } },
 };
 
 // DCSA — estimated vessel arrival (EST, future eventDateTime)
 const mockDcsa: DcsaEventsResponse = [{
-  eventTypeCode: 'ARRI', eventClassifierCode: 'EST',
+  eventID: 'ndh-24866-04', eventType: 'TRANSPORT', eventTypeCode: 'ARRI', eventClassifierCode: 'EST',
   eventDateTime: '2026-12-05T08:00:00Z', eventCreatedDateTime: '2026-11-22T05:30:00Z',
-  location: { locationName: 'Veracruz', UNLocationCode: 'MXVER' },
+  transportCall: { UNLocationCode: 'MXVER', location: { locationName: 'Veracruz' },
+    carrierVoyageNumber: '047W', vessel: { vesselName: 'NORDHAVEN BOREALIS' } },
 }];
 
 // EDI 315 — vessel arrival with an estimated date (139) at the port

@@ -23,8 +23,8 @@ export interface DhlPlace {
 export interface DhlStatus {
   timestamp: string
   statusCode: DhlStatusCode
+  status: string // the operator's text, read through its vocabulary
   location?: DhlPlace
-  status?: string
   statusDetailed?: string
   description?: string
   remark?: string
@@ -43,22 +43,32 @@ export interface DhlShipment {
   destination?: DhlPlace
   status?: DhlStatus
   pickUpDate?: string
-  estimatedTimeOfDelivery?: string
   agreedDeliveryDate?: string
-  estimatedDeliveryTimeFrame?: { estimatedFrom?: string; estimatedThrough?: string }
+  estimatedDeliveryTimeFrame?: { estimatedFrom: string; estimatedThrough?: string } // a window, or a single date
   estimatedTimeOfDeliveryRemark?: string
-  events?: DhlEvent[]
+  events: DhlEvent[] // [] while the leg has no data
 }
 
 // ── DCSA Track & Trace ──
 export type DcsaClassifier = 'ACT' | 'PLN' | 'EST'
+export type DcsaEventType = 'TRANSPORT' | 'EQUIPMENT' | 'SHIPMENT'
+
+export interface DcsaTransportCall {
+  UNLocationCode: string
+  location: { locationName: string }
+  carrierVoyageNumber?: string
+  vessel?: { vesselName: string; vesselIMONumber?: string }
+}
 
 export interface DcsaEvent {
-  eventTypeCode: string // transport / equipment / shipment code merged: DEPA, ARRI, GTIN, LOAD, DISC, GTOT, CONF, ...
+  eventID: string
+  eventType: DcsaEventType // family of the code
+  eventTypeCode: string // DEPA, ARRI, GTIN, LOAD, DISC, GTOT, CONF, ...
   eventClassifierCode: DcsaClassifier
   eventDateTime: string // when it happened, or will happen (PLN / EST)
   eventCreatedDateTime: string // when the carrier sent it
-  location: { locationName: string; UNLocationCode: string }
+  transportCall: DcsaTransportCall
+  equipmentReference?: string // container number, on EQUIPMENT events
   delayReasonCode?: string // SMDG delay reason, e.g. "WEA"
 }
 
@@ -89,8 +99,8 @@ export interface T49Container {
     ref_numbers?: string[]
     current_status?: T49ContainerStatus
     availability_known?: boolean
-    available_for_pickup?: boolean | null
-    holds_at_pod_terminal?: T49Hold[]
+    available_for_pickup: boolean // false while any hold is active
+    holds_at_pod_terminal: T49Hold[]
     fees_at_pod_terminal?: T49Fee[]
     pickup_lfd?: string | null
     import_deadlines?: {
@@ -105,7 +115,7 @@ export interface T49Container {
     ind_eta_at?: string | null
     empty_terminated_at?: string | null
     pod_timezone?: string | null
-    terminal_checked_at?: string | null
+    terminal_checked_at: string // when the terminal was read
   }
 }
 

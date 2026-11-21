@@ -36,7 +36,7 @@ export function mapDcsa(raw: DcsaEventsResponse, operatorName: string, idPrefix:
     const base = {
       occurredAt: ev.eventDateTime,
       confidence: DCSA_CONFIDENCE[ev.eventClassifierCode],
-      place: { name: ev.location.locationName, unlocode: ev.location.UNLocationCode },
+      place: { name: ev.transportCall.location.locationName, unlocode: ev.transportCall.UNLocationCode },
       source,
       order: 'applied' as const, // placeholder: the state machine sets the real order
     }

@@ -41,7 +41,6 @@ Every item below is a choice not covered by the PRD / data-model, or a conflict 
 - **DCSA `SHIPMENT` events other than BKG+CONF** are not emitted: "they go to history" has no tag to carry them, and no fixture contains one.
 - **DHL:**
   - The top-level `status` is ignored (it repeats the newest event).
-  - The window ETA wins over `estimatedTimeOfDelivery` when both are present.
   - `statusCode: delivered` with a non-`DELIVERED` vocabulary tag becomes `NOT_MAPPED`. The `failure` cross-check is not implemented.
   - `receivedAt` is the event timestamp.
 - **DCSA:**
@@ -50,7 +49,7 @@ Every item below is a choice not covered by the PRD / data-model, or a conflict 
   - `delayReasonCode` emits an extra `DELAYED` update.
   - Codes without a tag become `NOT_MAPPED`.
 - **Terminal49:**
-  - Hold and ready-for-pickup updates are dated `terminal_checked_at`, which is also their `receivedAt`.
+  - Hold and ready-for-pickup updates are dated `terminal_checked_at`, which is also the `receivedAt` of every update.
   - There is no `CUSTOMS_RELEASED`, because a single snapshot can't show a hold being removed.
   - `ind_eta_at` is not mapped.
 - **Email / AI:**

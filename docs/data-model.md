@@ -113,7 +113,7 @@ interface Shipment {
 
 ## 3. Mapping (phase 1)
 
-**Road — DHL-shaped operators:** `events[].status` → `RoadTag` through each operator's vocabulary in `data/operators.ts`. Cross-check: `statusCode = delivered` must be `DELIVERED`; `failure` → `DELIVERY_FAILED` or `EXCEPTION`. ETA from `estimatedTimeOfDelivery` / `estimatedDeliveryTimeFrame`.
+**Road — DHL-shaped operators:** `events[].status` → `RoadTag` through each operator's vocabulary in `data/operators.ts`. Cross-check: `statusCode = delivered` must be `DELIVERED`; `failure` → `DELIVERY_FAILED` or `EXCEPTION`. ETA from `estimatedDeliveryTimeFrame` (a window, or a single date).
 
 **Sea:**
 

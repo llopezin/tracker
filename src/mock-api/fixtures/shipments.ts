@@ -59,10 +59,19 @@ const QUERETARO: Place = {
 const addr = (addressLocality: string, countryCode: string) => ({
   address: { addressLocality, countryCode },
 });
-// DCSA locations.
-const VLC = { locationName: "Valencia", UNLocationCode: "ESVLC" };
-const RTM = { locationName: "Rotterdam", UNLocationCode: "NLRTM" };
-const VER = { locationName: "Veracruz", UNLocationCode: "MXVER" };
+// DCSA transport calls: port + voyage + vessel.
+const call = (UNLocationCode: string, locationName: string, carrierVoyageNumber: string, vesselName: string) => ({
+  UNLocationCode,
+  location: { locationName },
+  carrierVoyageNumber,
+  vessel: { vesselName },
+});
+const VLC_MERIDIA = call("ESVLC", "Valencia", "112N", "MERIDIA STAR");
+const RTM_MERIDIA = call("NLRTM", "Rotterdam", "112N", "MERIDIA STAR");
+const VLC_NDH_044 = call("ESVLC", "Valencia", "044W", "NORDHAVEN AURORA");
+const VER_NDH_044 = call("MXVER", "Veracruz", "044W", "NORDHAVEN AURORA");
+const VLC_NDH_047 = call("ESVLC", "Valencia", "047W", "NORDHAVEN BOREALIS");
+const VER_NDH_047 = call("MXVER", "Veracruz", "047W", "NORDHAVEN BOREALIS");
 
 // ── ACM-24812 · Galicar · on time, ETA window, one unknown status ──
 const acm24812: ShipmentPayload = {
@@ -114,7 +123,6 @@ const acm24812: ShipmentPayload = {
               location: addr("Barcelona", "ES"),
             },
             agreedDeliveryDate: "2026-11-23T18:00:00+01:00",
-            estimatedTimeOfDelivery: "2026-11-23T14:00:00+01:00",
             estimatedDeliveryTimeFrame: {
               estimatedFrom: "2026-11-23T12:00:00+01:00",
               estimatedThrough: "2026-11-23T16:00:00+01:00",
@@ -253,7 +261,7 @@ const acm24790: ShipmentPayload = {
               status: "On route",
               location: addr("Montélimar", "FR"),
             },
-            estimatedTimeOfDelivery: "2026-11-23T15:00:00+01:00",
+            estimatedDeliveryTimeFrame: { estimatedFrom: "2026-11-23T15:00:00+01:00" },
             events: [
               {
                 timestamp: "2026-11-21T21:30:00+01:00",
@@ -320,16 +328,16 @@ const acm24755: ShipmentPayload = {
         {
           format: "dcsa",
           data: [
-            { eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-16T09:15:00Z", eventCreatedDateTime: "2026-11-16T09:15:00Z", location: VLC },
-            { eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-17T23:30:00Z", eventCreatedDateTime: "2026-11-17T23:30:00Z", location: VLC },
-            { eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-18T17:40:00Z", eventCreatedDateTime: "2026-11-18T17:40:00Z", location: VLC },
-            { eventTypeCode: "ARRI", eventClassifierCode: "EST", eventDateTime: "2026-11-24T08:00:00Z", eventCreatedDateTime: "2026-11-18T17:40:00Z", location: RTM },
+            { eventID: "mrd-24755-01", eventType: "EQUIPMENT", eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-16T09:15:00Z", eventCreatedDateTime: "2026-11-16T09:15:00Z", transportCall: VLC_MERIDIA, equipmentReference: "MSKU4471230" },
+            { eventID: "mrd-24755-02", eventType: "EQUIPMENT", eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-17T23:30:00Z", eventCreatedDateTime: "2026-11-17T23:30:00Z", transportCall: VLC_MERIDIA, equipmentReference: "MSKU4471230" },
+            { eventID: "mrd-24755-03", eventType: "TRANSPORT", eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-18T17:40:00Z", eventCreatedDateTime: "2026-11-18T17:40:00Z", transportCall: VLC_MERIDIA },
+            { eventID: "mrd-24755-04", eventType: "TRANSPORT", eventTypeCode: "ARRI", eventClassifierCode: "EST", eventDateTime: "2026-11-24T08:00:00Z", eventCreatedDateTime: "2026-11-18T17:40:00Z", transportCall: RTM_MERIDIA },
           ],
         },
       ],
     },
     // Carrier haulage leg: no feed yet (Meridia is the only operator listed for this shipment).
-    { emailIds: [], raw: [{ format: "dhl", data: { id: "MRD-CH-3302" } }] },
+    { emailIds: [], raw: [{ format: "dhl", data: { id: "MRD-CH-3302", events: [] } }] },
   ],
 };
 
@@ -440,10 +448,10 @@ const acm24817: ShipmentPayload = {
         {
           format: "dcsa",
           data: [
-            { eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-01T10:00:00Z", eventCreatedDateTime: "2026-11-01T10:00:00Z", location: VLC },
-            { eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-03T14:00:00Z", eventCreatedDateTime: "2026-11-03T14:00:00Z", location: VLC },
-            { eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-04T09:00:00Z", eventCreatedDateTime: "2026-11-04T09:00:00Z", location: VLC },
-            { eventTypeCode: "ARRI", eventClassifierCode: "ACT", eventDateTime: ARRIVED_24817, eventCreatedDateTime: ARRIVED_24817, location: VER },
+            { eventID: "ndh-24817-01", eventType: "EQUIPMENT", eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-01T10:00:00Z", eventCreatedDateTime: "2026-11-01T10:00:00Z", transportCall: VLC_NDH_044, equipmentReference: "NDHU7654321" },
+            { eventID: "ndh-24817-02", eventType: "EQUIPMENT", eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-03T14:00:00Z", eventCreatedDateTime: "2026-11-03T14:00:00Z", transportCall: VLC_NDH_044, equipmentReference: "NDHU7654321" },
+            { eventID: "ndh-24817-03", eventType: "TRANSPORT", eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-04T09:00:00Z", eventCreatedDateTime: "2026-11-04T09:00:00Z", transportCall: VLC_NDH_044 },
+            { eventID: "ndh-24817-04", eventType: "TRANSPORT", eventTypeCode: "ARRI", eventClassifierCode: "ACT", eventDateTime: ARRIVED_24817, eventCreatedDateTime: ARRIVED_24817, transportCall: VER_NDH_044 },
           ],
         },
         {
@@ -533,16 +541,16 @@ const acm24866: ShipmentPayload = {
         {
           format: "dcsa",
           data: [
-            { eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-11T10:00:00Z", eventCreatedDateTime: "2026-11-11T10:00:00Z", location: VLC },
-            { eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-13T08:00:00Z", eventCreatedDateTime: "2026-11-13T08:00:00Z", location: VLC },
-            { eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-13T19:40:00Z", eventCreatedDateTime: "2026-11-13T19:40:00Z", location: VLC },
-            { eventTypeCode: "ARRI", eventClassifierCode: "EST", eventDateTime: "2026-12-05T08:00:00Z", eventCreatedDateTime: "2026-11-22T05:30:00Z", location: VER },
+            { eventID: "ndh-24866-01", eventType: "EQUIPMENT", eventTypeCode: "GTIN", eventClassifierCode: "ACT", eventDateTime: "2026-11-11T10:00:00Z", eventCreatedDateTime: "2026-11-11T10:00:00Z", transportCall: VLC_NDH_047, equipmentReference: "NDHU1234565" },
+            { eventID: "ndh-24866-02", eventType: "EQUIPMENT", eventTypeCode: "LOAD", eventClassifierCode: "ACT", eventDateTime: "2026-11-13T08:00:00Z", eventCreatedDateTime: "2026-11-13T08:00:00Z", transportCall: VLC_NDH_047, equipmentReference: "NDHU1234565" },
+            { eventID: "ndh-24866-03", eventType: "TRANSPORT", eventTypeCode: "DEPA", eventClassifierCode: "ACT", eventDateTime: "2026-11-13T19:40:00Z", eventCreatedDateTime: "2026-11-13T19:40:00Z", transportCall: VLC_NDH_047 },
+            { eventID: "ndh-24866-04", eventType: "TRANSPORT", eventTypeCode: "ARRI", eventClassifierCode: "EST", eventDateTime: "2026-12-05T08:00:00Z", eventCreatedDateTime: "2026-11-22T05:30:00Z", transportCall: VER_NDH_047 },
           ],
         },
       ],
     },
     // Carrier haulage leg: no feed yet (Nordhaven is the only operator listed for this shipment).
-    { emailIds: [], raw: [{ format: "dhl", data: { id: "NDH-CH-1204" } }] },
+    { emailIds: [], raw: [{ format: "dhl", data: { id: "NDH-CH-1204", events: [] } }] },
   ],
 };
 
@@ -588,7 +596,7 @@ const acm24844: ShipmentPayload = {
               status: "Delivered",
               location: addr("Lyon", "FR"),
             },
-            estimatedTimeOfDelivery: "2026-11-18T12:00:00+01:00",
+            estimatedDeliveryTimeFrame: { estimatedFrom: "2026-11-18T12:00:00+01:00" },
             events: [
               {
                 timestamp: "2026-11-18T11:20:00+01:00",

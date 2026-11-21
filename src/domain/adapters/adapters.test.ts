@@ -39,13 +39,13 @@ describe('mapDhl', () => {
 })
 
 describe('mapDcsa', () => {
-  const VER = { locationName: 'Veracruz', UNLocationCode: 'MXVER' }
-  const VLC = { locationName: 'Valencia', UNLocationCode: 'ESVLC' }
+  const VER = { UNLocationCode: 'MXVER', location: { locationName: 'Veracruz' } }
+  const VLC = { UNLocationCode: 'ESVLC', location: { locationName: 'Valencia' } }
   const raw: DcsaEventsResponse = [
-    { eventTypeCode: 'ARRI', eventClassifierCode: 'EST', eventDateTime: '2026-12-05T08:00:00Z', eventCreatedDateTime: '2026-11-22T05:30:00Z', location: VER },
-    { eventTypeCode: 'DEPA', eventClassifierCode: 'ACT', eventDateTime: '2026-11-13T19:40:00Z', eventCreatedDateTime: '2026-11-13T19:40:00Z', location: VLC },
-    { eventTypeCode: 'GTIN', eventClassifierCode: 'ACT', eventDateTime: '2026-11-11T10:00:00Z', eventCreatedDateTime: '2026-11-11T10:00:00Z', location: VLC },
-    { eventTypeCode: 'INSP', eventClassifierCode: 'ACT', eventDateTime: '2026-11-12T10:00:00Z', eventCreatedDateTime: '2026-11-12T10:00:00Z', location: VLC },
+    { eventID: 'e1', eventType: 'TRANSPORT', eventTypeCode: 'ARRI', eventClassifierCode: 'EST', eventDateTime: '2026-12-05T08:00:00Z', eventCreatedDateTime: '2026-11-22T05:30:00Z', transportCall: VER },
+    { eventID: 'e2', eventType: 'TRANSPORT', eventTypeCode: 'DEPA', eventClassifierCode: 'ACT', eventDateTime: '2026-11-13T19:40:00Z', eventCreatedDateTime: '2026-11-13T19:40:00Z', transportCall: VLC },
+    { eventID: 'e3', eventType: 'EQUIPMENT', eventTypeCode: 'GTIN', eventClassifierCode: 'ACT', eventDateTime: '2026-11-11T10:00:00Z', eventCreatedDateTime: '2026-11-11T10:00:00Z', transportCall: VLC },
+    { eventID: 'e4', eventType: 'EQUIPMENT', eventTypeCode: 'INSP', eventClassifierCode: 'ACT', eventDateTime: '2026-11-12T10:00:00Z', eventCreatedDateTime: '2026-11-12T10:00:00Z', transportCall: VLC },
   ]
   const r = mapDcsa(raw, 'Nordhaven Lines', 'X')
 
