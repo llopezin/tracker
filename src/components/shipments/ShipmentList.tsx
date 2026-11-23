@@ -12,7 +12,7 @@ export type ShipmentListProps = {
 export function ShipmentList({ ids, role, label, expandedIds, onToggle }: ShipmentListProps) {
   return (
     <section aria-label={label}>
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-7">
         {ids.map((id) => (
           <ShipmentRow key={id} id={id} role={role} expanded={expandedIds.has(id)} onToggle={onToggle} />
         ))}
