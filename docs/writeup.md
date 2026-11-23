@@ -12,7 +12,7 @@
 
 - **Air transshipments:** road and sea combined in one shipment already show the multimodal problem so other transports are left out.
 - **Internal users by site:** the API already filters ops by site, but the demo has a single global ops user. Site-level users depend on real authentication (next step 3).
-- **Automatic refresh and real notifications:** data is fetched fresh on every visit, but there is no polling, and "Notify customer" only records the action. Both need a real backend (sections 4 and 10).
+- **Automatic refresh and real notifications:** data is fetched fresh on every visit, but there is no polling, and "Notify customer" only records the action. See sections 4 and 10.
 
 ## 2. System approach
 
@@ -27,16 +27,10 @@ raw feeds + emails
 
 **The domain** (`src/domain/`) is pure TypeScript, with no React and no network:
 
-- **Adapters:** one per format. They map only documented codes. Everything else becomes `NOT_MAPPED`, and the raw value is kept.
-- **State machine:** milestones have ranks, and a leg's status only moves forward. Older events go to history. Out-of-order events are ignored and shown to ops. Duplicates collapse into one step with several sources. An `ACTUAL` event on the next leg closes the current one. A pending or rejected AI read never reaches it.
-- **Rules:** ETA, delay ("+N d" in calendar days, or "Overdue"), stale, tone, incidents, actions, filter tags and customer notice. Each has a deterministic condition.
-- **View:** `mapShipments` returns one `ShipmentView[]` per audience. The customer projection never contains AI marks, unknown codes, ignored events, actions, documents or raw email. Components only ever read `ShipmentView`.
-
-**One door to the backend.** `src/api/client.ts` is the only way the app reaches data. Today it delegates to a fake backend that runs in the browser.
-
-- Every data call takes the role, and the fake backend applies the perimeter. The UI never filters for security.
-- It returns copies after a small delay, like a real network.
-- It holds the activity (AI reviews, uploads, actions done), so a change made in `/ops` reaches every role.
+- **Adapters:** one per format. Only documented codes are mapped, and the raw value is kept.
+- **State machine:** a leg's status only moves forward. Older events go to history, out-of-order events are ignored, and duplicates merge into one step with several sources.
+- **Rules:** deterministic conditions only. No AI decides incidents, actions or notices.
+- **View:** the customer projection never contains AI marks, unknown codes, ignored events, actions, documents or raw email.
 
 ## 3. A real backend
 
@@ -67,24 +61,24 @@ TanStack Query is a specific and powerful tool that may not be fit for every sin
 
 TanStack Query caches data by default, which is against the needs of our board. The default behaviour has been overridden and data is considered stale on arrival.
 
-## 7. Use of AI
+## 7. AI use and integration proposal
 
 AI is proposed to interpret email sources. Since one of the strongest points of LLMs is interpreting natural language, AI is used to cover this key task of the scope, which could not be covered with a more deterministic approach.
 
 A safety net is implemented where the AI-interpreted texts are only displayed to the ops role (`/ops`) to complete a review. They have an interactive option to accept or reject the update interpreted by AI. Once validated, it is displayed for other users.
+
+**Integration.** In production, `interpretText` becomes an LLM call with structured output (milestone, date, confidence, supporting quote), run asynchronously at ingestion. The output is validated before it is stored (the quote exists in the email, the date is plausible), and every accept and reject is logged to measure accuracy.
 
 ## 8. Assumptions
 
 - Every shipment has an internal record (planned milestones, documents, customer account, origin site). This is the baseline that delay is measured against.
 - Operators can be reached through at least one of: an API, a DCSA feed, a terminal API or email.
 - The DeCA is mandatory only on contracted domestic road legs. The e-CMR is optional.
-- One account per customer or subsidiary. Internal users in the prototype see all three sites.
+- One account per customer or subsidiary.
 
 ## 9. Known limitations
 
-- **Demo state is in memory.** AI reviews, uploads and actions done live in the mock backend and are lost on reload.
-- **Fixed clock.** "Now" is 22 Nov 2026 10:40 (Madrid), so delay and stale stay consistent with the synthetic data.
-- **Mocked AI.** Answers come from a fixed map per email, so only the emails in the fixtures can be read.
+- **Fixed clock.** "Now" is 22 Nov 2026 10:40 (Madrid).
 - **A customs hold can't be lifted from the terminal feed.** A single Terminal49 snapshot can't show a hold being removed. Only a later operator event moves the shipment on.
 - **Stale thresholds are fixed per mode** (24 h road, 72 h sea), not per operator or route.
 - **Sorting is fixed:** worst incident first, then ETA. Other orders, such as most recently updated, could be useful.
@@ -92,11 +86,11 @@ A safety net is implemented where the AI-interpreted texts are only displayed to
 
 ## 10. Prioritised next steps
 
-1. **Backend integration.** Ingest the existing road operators' APIs, the DCSA subscription, Terminal49 and a dedicated mailbox. Store raw payloads unchanged, so events can be re-normalised whenever a mapping improves.
-2. **Move the transformation to the server.** Run the adapters, state machine and rules in a BFF, together with filtering, sorting and pagination. The client receives `ShipmentView`s ready to render, and `client.ts` switches from the mock to `fetch`.
-3. **Authentication and perimeters.** Use SSO for internal users and invitation-based accounts for customers and subsidiaries. Enforce the site, account and role perimeter in the API, including site-level users (for example, Valencia only).
-4. **Polling.** Set `refetchInterval` on the shipments query and monitor request volume. Move to server-side caching or SSE only if it becomes an issue (see section 4).
-5. **Real AI integration.** Use an LLM call with structured output (milestone enum, ISO dates, confidence, supporting quote), run asynchronously at ingestion. Validate the output before storing it: the quote must exist in the email, the date must be plausible, and the milestone must fit the leg's mode. Calibrate the confidence threshold on labelled operator emails, and log every accept and reject.
-6. **Editable AI reads.** Let ops correct a field before accepting. Store each correction and use it to measure, and later improve, the AI's accuracy.
-7. **Real notifications and actions.** Make "Notify customer" and "Contact operator" actually send (email or push, opt-in per account), based on the existing notice rules.
-8. **More inputs.** Add PDF notices and widen operator coverage.
+1. **Backend integration:** ingest operator APIs, DCSA, Terminal49 and a mailbox.
+2. **Server-side transformation**, with filtering, sorting and pagination (section 3).
+3. **Authentication and perimeters:** SSO, invited customer accounts and site-level users.
+4. **Polling** (section 4).
+5. **Real AI integration** (section 7).
+6. **Editable AI reads:** ops corrects a field before accepting.
+7. **Real notifications and actions:** "Notify customer" and "Contact operator" actually send.
+8. **More inputs:** PDF notices and more operators.
