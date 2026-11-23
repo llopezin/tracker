@@ -135,7 +135,7 @@ interface Shipment {
 
 **Email:** AI mock → `AiExtraction` + a tag of the leg's mode, or `NOT_MAPPED`.
 
-## 4. Internal record (`mock-api/fixtures/shipments.ts`)
+## 4. Internal record (`mock-server/fixtures/shipments.ts`)
 
 What the manufacturer knows; no provider sends it.
 

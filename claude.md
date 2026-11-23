@@ -27,8 +27,8 @@ If two sources conflict, follow the higher one and mention the conflict in your 
 src/
   api/
     contracts.ts   wire types: provider raw payloads, ShipmentPayload, Operator, AiReading, Persona, Role
-    client.ts      the only way the app reaches the backend (today delegates to mock-api/); data calls take the role
-  mock-api/        fake backend, imported only by api/client.ts (and by tests, fixtures only)
+    client.ts      the only way the app reaches the backend (today delegates to mock-server/); data calls take the role
+  mock-server/     fake backend, imported only by api/client.ts (and by tests, fixtures only)
     fixtures/      shipments, emails + initial AI reviews, operators, personas, aiReadings (AI mock answers)
     server.ts      applies the role's perimeter (PRD §5), returns copies after a small delay (0 in tests); AI mock
   domain/          pure; only `import type` from api/contracts

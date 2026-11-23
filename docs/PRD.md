@@ -74,7 +74,7 @@ No hay login. Cada ruta tiene una persona de demo fija.
 
 ## 6. Datos
 
-Los fixtures están en `src/mock-api/fixtures/` y guardan el crudo con la forma de `api-responses.md`. Todo es ficticio. No se citan cifras sin fuente.
+Los fixtures están en `src/mock-server/fixtures/` y guardan el crudo con la forma de `api-responses.md`. Todo es ficticio. No se citan cifras sin fuente.
 
 **Operadores**
 
@@ -110,7 +110,7 @@ API mock (perímetro) → interpretText por email → mapShipments (adaptadores 
 ```
 
 - La normalización está en `src/domain/` (TS puro, sin React), porque es parte del valor.
-- **API mock** (`mock-api/server.ts`, solo accesible desde `api/client.ts`): aplica el perímetro del rol y devuelve copias tras ~100 ms (0 en tests). Guarda la actividad.
+- **API mock** (`mock-server/server.ts`, solo accesible desde `api/client.ts`): aplica el perímetro del rol y devuelve copias tras ~100 ms (0 en tests). Guarda la actividad.
 - **Adaptadores** (`dhl`, `dcsa`, `terminal49`, `email`): convierten el crudo en eventos. Un valor no reconocido produce `NOT_MAPPED`, nunca un hito inventado.
 - **`mapShipments(respuesta + lecturas IA, audiencia)`:** función pura. Junta los tramos y devuelve los `ShipmentView` en el orden de la lista, sin los datos que la audiencia cliente no recibe.
 - **Datos (TanStack Query):** una query por rol, `['shipments', rol]`, que se pide de nuevo en cada visita. Cada lectura IA se cachea por email (`['emailReading', id]`) una vez por carga de página. Registrar actividad invalida `['shipments']`, así que todos los roles la ven. Búsqueda, filtros y filas abiertas son `useState` local.
@@ -268,7 +268,7 @@ Cada caso de la tabla tiene un test.
 La IA solo lee texto libre. Una lectura IA nunca sustituye al plan ni a un dato del operador.
 
 ```ts
-// mock-api/server.ts (vía api/client.ts) — mock: respuesta fija tras ~400 ms
+// mock-server/server.ts (vía api/client.ts) — mock: respuesta fija tras ~400 ms
 interpretText(text: string): Promise<{
   milestone: RoadTag | SeaTag | null; at?: string; location?: string;
   eta?: string;            // fecha nueva, si el texto la da
@@ -312,7 +312,7 @@ Vite + React + TypeScript + Tailwind + TanStack Router (rutas por archivo) + Tan
 ```
 src/
   api/         contracts.ts (tipos del cable), client.ts (única puerta al backend)
-  mock-api/    server.ts (perímetro, actividad, IA mock) + fixtures/ (shipments, emails, operators, personas, aiReadings)
+  mock-server/ server.ts (perímetro, actividad, IA mock) + fixtures/ (shipments, emails, operators, personas, aiReadings)
   domain/      adapters/ (dhl, dcsa, terminal49, email, vocabularies), mapShipment.ts, stateMachine.ts, rules.ts, clock.ts — TS puro
   queries/      shipments.ts (queries y selectores)
   i18n/        en.ts

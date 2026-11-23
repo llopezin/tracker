@@ -2,7 +2,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Activity, Audience, ShipmentsResponse } from '../api/contracts'
 import { fetchShipments, interpretText } from '../api/client'
-import { initialAiReviews } from '../mock-api/fixtures/emails'
+import { initialAiReviews } from '../mock-server/fixtures/emails'
 import { NOW } from './clock'
 import { mapShipments, type ShipmentsData } from './mapShipment'
 import { customerNotice } from './rules'

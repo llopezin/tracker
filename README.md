@@ -32,9 +32,9 @@ The repo root is the Vite project, so import it with the Vite preset; no Root Di
 ```
 src/
   api/         contracts.ts (wire types) + client.ts (the app's only door to the backend; data calls take the role)
-  mock-api/    fake backend behind the client: fixtures/ (incl. AI readings), server.ts (each role's perimeter + AI mock)
-  domain/      operators.ts (+ vocabularies), stateMachine.ts, rules.ts, mapShipment.ts (pure TS)
-  queries/      shipments.ts (TanStack Query: shipments query, selector hooks, activity mutation)
+  mock-server/ fake backend behind the client: fixtures/ (incl. AI readings), server.ts (each role's perimeter + AI mock)
+  domain/      adapters/ (one per feed + vocabularies), stateMachine.ts, rules.ts, mapShipment.ts, clock.ts (pure TS)
+  queries/     shipments.ts (TanStack Query: shipments query, selector hooks, activity mutation)
   i18n/        en.ts + t()
   routes/      /, /ops, /subsidiary, /customer
   components/  ui/ (design-system primitives), shipments/

@@ -16,7 +16,7 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "regex": "(^|/)mock-api(/|$)", "message": "App code reaches the backend only through api/client." }
+            { "regex": "(^|/)mock-server(/|$)", "message": "App code reaches the backend only through api/client." }
           ]
         }]
       }
@@ -26,7 +26,7 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "regex": "(^|/)mock-api(/|$)", "message": "The domain never sees the mock backend." },
+            { "regex": "(^|/)mock-server(/|$)", "message": "The domain never sees the mock backend." },
             { "regex": "(^|/)api/client$", "message": "The domain is pure: the shipments query (queries/shipments.ts) fetches." },
             { "regex": "(^|/)(queries|components|routes)(/|$)", "message": "The domain does not depend on the app." },
             { "regex": "(^|/)api/contracts$", "allowTypeImports": true, "message": "Use `import type` from api/contracts." }
@@ -35,7 +35,7 @@
       }
     },
     {
-      "files": ["src/mock-api/**"],
+      "files": ["src/mock-server/**"],
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
@@ -49,7 +49,7 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "group": ["**/mock-api/*", "!**/mock-api/fixtures"], "message": "Tests import mock-api/fixtures/** or go through api/client." }
+            { "group": ["**/mock-server/*", "!**/mock-server/fixtures"], "message": "Tests import mock-server/fixtures/** or go through api/client." }
           ]
         }]
       }

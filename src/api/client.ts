@@ -1,6 +1,6 @@
-// The app's only door to the backend (today the in-browser mock-api/; later, fetch calls with the same signatures).
+// The app's only door to the backend (today the in-browser mock-server/; later, fetch calls with the same signatures).
 // Data calls take the role: the backend returns only what that role may see.
-import * as server from '../mock-api/server'
+import * as server from '../mock-server/server'
 
 /** The role's shipments with their emails, operators and ops activity. */
 export const fetchShipments = server.getShipments
