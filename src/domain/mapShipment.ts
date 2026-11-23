@@ -159,7 +159,7 @@ function mapShipment(payload: ShipmentPayload, data: ShipmentsData, audience: Au
         return d && { by: d.by, at: d.at }
       },
     }),
-    documents,
+    documents: isOps ? documents : [],
     delivered,
     ...(deliveredAt ? { deliveredAt } : {}),
   }

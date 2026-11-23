@@ -1,6 +1,6 @@
 import type { ShipmentView, StepView } from '../../domain/types'
 import { t } from '../../i18n/t'
-import type { Audience, Role } from '../../api/contracts'
+import type { Role } from '../../api/contracts'
 import { getPersona } from '../../api/client'
 import { useRecordActivity, useRunAction, useShipments } from '../../data/shipments'
 import { Button } from '../ui/Button'
@@ -50,7 +50,7 @@ export function ShipmentDetail({ shipmentId, role, id }: ShipmentDetailProps) {
           </section>
         )}
         {isOps && view.actions.length > 0 && <Actions view={view} role={role} />}
-        {view.documents.length > 0 && <Documents view={view} audience={audience} role={role} />}
+        {view.documents.length > 0 && <Documents view={view} role={role} />}
       </div>
     </div>
   )
@@ -127,9 +127,9 @@ function Actions({ view, role }: { view: ShipmentView; role: Role }) {
   )
 }
 
-function Documents({ view, audience, role }: { view: ShipmentView; audience: Audience; role: Role }) {
+/** Ops only (customer audiences receive no documents). */
+function Documents({ view, role }: { view: ShipmentView; role: Role }) {
   const record = useRecordActivity(role)
-  const isOps = audience === 'ops'
   return (
     <section className="flex flex-col gap-2">
       <Label as="h3">{t('ui.detail.documents')}</Label>
@@ -142,24 +142,18 @@ function Documents({ view, audience, role }: { view: ShipmentView; audience: Aud
                 <Icon name={missing || doc.status === 'flagged' ? 'doc-alert' : 'doc'} />
                 <div className="min-w-0 flex-1">
                   <p className="text-ui font-medium">{doc.name}</p>
-                  {isOps && doc.note && <p className="text-caption text-fg-subtle">{doc.note}</p>}
+                  {doc.note && <p className="text-caption text-fg-subtle">{doc.note}</p>}
                 </div>
-                {isOps && <Tag tone={documentTag[doc.status].tone}>{t(documentTag[doc.status].label)}</Tag>}
-                {!isOps && missing ? (
-                  <span className="text-note text-fg-muted">{t('ui.doc.preparing')}</span>
-                ) : (
-                  <>
-                    {!missing && (
-                      <Button size="sm" tone="ghost" aria-label={t('ui.doc.openAria', { name: doc.name })}>
-                        {t('ui.doc.open')}
-                      </Button>
-                    )}
-                    {isOps && (missing || doc.status === 'flagged') && (
-                      <Button size="sm" onClick={() => { record({ type: 'upload', shipmentId: view.id, docKey: doc.key }); focusDetail(view.id) }}>
-                        {t('ui.doc.upload')}
-                      </Button>
-                    )}
-                  </>
+                <Tag tone={documentTag[doc.status].tone}>{t(documentTag[doc.status].label)}</Tag>
+                {!missing && (
+                  <Button size="sm" tone="ghost" aria-label={t('ui.doc.openAria', { name: doc.name })}>
+                    {t('ui.doc.open')}
+                  </Button>
+                )}
+                {(missing || doc.status === 'flagged') && (
+                  <Button size="sm" onClick={() => { record({ type: 'upload', shipmentId: view.id, docKey: doc.key }); focusDetail(view.id) }}>
+                    {t('ui.doc.upload')}
+                  </Button>
                 )}
               </li>
             )

@@ -49,4 +49,4 @@ src/
   components/  ui/ (design-system primitives), shipments/
 ```
 
-Docs: `docs/PRD.md` (scope and rules), `docs/data-model.md`, `docs/decisions.md` (every decision taken outside the spec), `docs/writeup.md`.
+Docs: `docs/PRD.md` (scope and rules), `docs/data-model.md`, `docs/writeup.md`.

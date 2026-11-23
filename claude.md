@@ -13,11 +13,11 @@ If two sources conflict, follow the higher one and mention the conflict in your 
 
 ## Non-negotiable rules
 
-- **Never invent a status or an ETA.** Unknown codes become `NOT_MAPPED`. With no operator ETA, show "ETA not available". The system never calculates a date.
+- **Never invent a status or an ETA.** Unknown codes become `NOT_MAPPED`. With no operator ETA, the row hides the ETA column (never a made-up date). The system never calculates a date.
 - **Only `ACTUAL` moves a state.** `EST` and `PLN` produce ETAs, commitments or planned steps.
 - **The state machine decides order.** Use `domain/stateMachine.ts` → `applyEvent(legState, event)` → `applied | history | rejected | duplicate`. Statuses never go backwards.
 - **AI is pending until a human decides.** A pending AI update is visible only in `/ops`, never changes status or ETA, and blocks "Notify customer". Accepted updates reach the customer as normal steps with no AI mark.
-- **The customer view never receives:** `AI`, `UNKNOWN`, `IGNORED`, rejected AI updates, `aiAlternative`, `actions`.
+- **The customer view never receives:** `AI`, `UNKNOWN`, `IGNORED`, rejected AI updates, `aiAlternative`, `actions`, `documents`.
 - **Deterministic only.** Incidents, actions, health, delay, stale and `customerNotice` come from `domain/rules.ts`. No AI decides any of them.
 - **Fixed clock.** Always use `NOW` from `domain/clock.ts` (`2026-11-22T10:40` Europe/Madrid). Never call `new Date()` for business logic.
 
@@ -38,7 +38,7 @@ src/
       vocabularies.ts  operator text → RoadTag (DHL-shaped road JSON)
       index.ts     mapLeg: runs the adapters of one leg and merges them (shared.ts: Tag, Update, byTime)
     stateMachine.ts
-    rules.ts       eta, delay/delta, stale, health, incidents, actions, customerNotice, sortShipments
+    rules.ts       eta, delay/delta, stale, health, incidents, actions, customerNotice, sortShipments (worst incident first)
     mapShipment.ts mapShipments(raw shipments + AI readings + activity, audience) → ShipmentView[] in list order
     clock.ts
   data/shipments.ts  TanStack Query: shipmentsQuery(role), useShipments / useNotices selectors, useRecordActivity

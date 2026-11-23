@@ -35,26 +35,25 @@ Si dos documentos no coinciden, manda el número más bajo.
 
 **Se construye:**
 
-- Rutas `/ops`, `/filial` y `/cliente`, cada una con su perímetro. Indice solo redirije.
+- Rutas `/ops`, `/subsidiary` y `/customer`, cada una con su perímetro. El índice solo enlaza a las tres.
 - Cuatro formatos mock, normalizados en el frontend: JSON de carretera (forma DHL Unified), DCSA Track & Trace (mar), Terminal49 (puerto y aduana) y email (lectura IA).
 - Pasos hechos y próximos por envío, cada uno con su fuente y su etiqueta.
-- ETA solo del operador, con su fuente al lado.
+- ETA solo del operador; su fuente se ve en el paso del detalle.
 - Incidencias y acciones deterministas para ops. Revisión humana de las lecturas IA.
 - Banner de avisos en las vistas de cliente (sin envío real).
-- Lista con búsqueda por ID, filtros con contador, entregados plegados, leyenda y documentos.
+- Lista con búsqueda por ID, filtros con contador y entregados plegados. Documentos en el detalle de ops.
 
 **No se construye (solo write-up):** login, backend, ingesta (polling, webhooks, buzón de email), LLM real, envío real de emails, modos aéreo y ferrocarril.
 
 **Descartado:** ETA predicha por el sistema, búsqueda en lenguaje natural, envío de avisos por email o push, acción siguiente decidida por IA.
 
-**Limitaciones del prototipo:** rutas abiertas, datos e IA mock, reloj fijo. El estado de sesión se pierde al recargar.
+**Limitaciones del prototipo:** rutas abiertas, backend, datos e IA mock, reloj fijo. La actividad (revisiones, acciones, subidas) vive en memoria del backend mock y se pierde al recargar.
 
 **Fase 2:**
 
 - [ ] EDI X12 315: parser de `B4` y `R4/DTM` (calificador 139 estimado, 140 real), tipo `X12_315`.
 - [ ] Avisos PDF con lectura IA y el mismo flujo de revisión que el email.
 - [ ] Transbordos: `ARRIVED_TRANSSHIPMENT` y `TRANSSHIPPED`, con su rango.
-- [ ] Formato desconocido: se guarda tal cual y se intenta leer con IA. Si falla, queda `NOT_MAPPED`. Nunca se descarta.
 - [ ] Adaptadores UPS, FedEx, AfterShip y Vizion (tipos ya documentados).
 - [ ] Perímetros internos por sitio. Ejemplo: un usuario limitado a Valencia Warehouse y otro global. La API filtra la lista por el sitio del usuario. En el prototipo, `/ops` es el usuario global.
 
@@ -66,15 +65,16 @@ No hay login. Cada ruta tiene una persona de demo fija.
 | --- | --- | --- | --- |
 | `/` | — | — | Accesos a Ops, Filial y Cliente |
 | `/ops` | Ops | ops@acme.com | Origen en Zaragoza Plant, Valencia Warehouse o Bilbao Plant |
-| `/filial` | Filial | support.subsidiary@acme.com | Cuenta Acme México (ACM-24817, ACM-24866) |
-| `/cliente` | Cliente final | client@gmail.com | Sus envíos (ACM-24790) |
+| `/subsidiary` | Filial | support.subsidiary@acme.com | Cuenta Acme México (ACM-24817, ACM-24866) |
+| `/customer` | Cliente final | client@gmail.com | Sus envíos (ACM-24790) |
 
 - Un envío fuera del perímetro no aparece en listas, contadores ni búsqueda.
-- Las tres rutas comparten el estado de sesión: revisiones IA, acciones hechas y documentos subidos.
+- El perímetro lo aplica la API mock, nunca la UI.
+- Las tres rutas comparten la actividad del backend mock: revisiones IA, acciones hechas y documentos subidos.
 
 ## 6. Datos
 
-Los fixtures están en `src/data/` y guardan el crudo con la forma de `api-responses.md`. Todo es ficticio. No se citan cifras sin fuente.
+Los fixtures están en `src/mock-api/fixtures/` y guardan el crudo con la forma de `api-responses.md`. Todo es ficticio. No se citan cifras sin fuente.
 
 **Operadores**
 
@@ -106,15 +106,15 @@ Los fixtures están en `src/data/` y guardan el crudo con la forma de `api-respo
 ## 7. Flujo de datos
 
 ```
-fixtures → adaptadores → eventos → mapShipment (+ sesión, NOW) → ShipmentView → componentes
+API mock (perímetro) → interpretText por email → mapShipments (adaptadores → máquina de estados → reglas, NOW) → ShipmentView[] por audiencia → componentes
 ```
 
 - La normalización está en `src/domain/` (TS puro, sin React), porque es parte del valor.
-- No hay API simulada. Una función asíncrona devuelve los fixtures importados.
+- **API mock** (`mock-api/server.ts`, solo accesible desde `api/client.ts`): aplica el perímetro del rol y devuelve copias tras ~100 ms (0 en tests). Guarda la actividad.
 - **Adaptadores** (`dhl`, `dcsa`, `terminal49`, `email`): convierten el crudo en eventos. Un valor no reconocido produce `NOT_MAPPED`, nunca un hito inventado.
-- **`mapShipment(fixture, events, session, NOW)`:** función pura. Junta los tramos y devuelve el `ShipmentView`. Se ejecuta al cargar para todos los envíos y, después, solo para el envío de cada acción.
-- **Store:** un store Zustand, `useShipmentStore`, con `shipments` (por id), `ids` y los hechos de sesión. La ruta da la persona y el perímetro. Búsqueda, filtros y filas abiertas son `useState` local.
-- **Render** (sin `React.memo`): la lista lee `ids` y cada fila lee `shipments[id]`. Un selector que construye un objeto o un array usa `useShallow`. `mapShipment` nunca se ejecuta en un selector ni en el render.
+- **`mapShipments(respuesta + lecturas IA, audiencia)`:** función pura. Junta los tramos y devuelve los `ShipmentView` en el orden de la lista, sin los datos que la audiencia cliente no recibe.
+- **Datos (TanStack Query):** una query por rol, `['shipments', rol]`, que se pide de nuevo en cada visita. Cada lectura IA se cachea por email (`['emailReading', id]`) una vez por carga de página. Registrar actividad invalida `['shipments']`, así que todos los roles la ven. Búsqueda, filtros y filas abiertas son `useState` local.
+- **Render:** la página selecciona solo los campos por los que filtra; cada fila (`memo`) y su detalle seleccionan su envío por id. `mapShipments` nunca se ejecuta en un selector ni en el render.
 
 **Reglas de mapeo:**
 
@@ -129,10 +129,10 @@ Estado, ETA, incidencias, acciones y avisos salen solo de estas reglas. Ninguna 
 ### 8.1 ETA
 
 - La ETA viene solo del operador: `estimatedTimeOfDelivery` / `estimatedDeliveryTimeFrame` en carretera, `EST` de DCSA en mar.
-- Cada ETA muestra su fuente al lado.
+- La fuente de la ETA se ve en el paso correspondiente del detalle.
 - Si solo el próximo destino tiene ETA → "ETA to next stop · \<lugar>".
-- La UI muestra "ETA not available" si no hay ETA del operador, hay retención, el envío no ha salido o está stale.
-- Una lectura IA pendiente con fecha nueva no cambia la ETA. Ops la ve como alternativa ("AI-read 82%").
+- La fila oculta la columna ETA si no hay ETA del operador, hay retención, el envío no ha salido o está stale. No se muestra ninguna fecha en su lugar.
+- Una lectura IA pendiente con fecha nueva no cambia la ETA. Ops la ve en el detalle como alternativa del próximo paso ("AI-read 82%").
 - Ops acepta la lectura → la fecha nueva es la ETA, con la anterior tachada.
 
 ### 8.2 Retraso
@@ -150,11 +150,11 @@ El delta es "+N d". En el caso 3 es "Overdue". Una ETA revisada dentro del plan 
 
 Sin evento nuevo durante más de 24 h (carretera) o 72 h (mar). No aplica a entregados ni a envíos que no han salido.
 
-### 8.4 Estado, tono y orden
+### 8.4 Estado, salud y orden
 
 Se aplica la primera condición que se cumple:
 
-| # | Condición | Tono |
+| # | Condición | `health` |
 | --- | --- | --- |
 | 1 | Entregado | Sección de entregados |
 | 2 | Stale | `stale` |
@@ -164,7 +164,7 @@ Se aplica la primera condición que se cumple:
 | 6 | No ha salido | `pre` |
 | 7 | Otro caso | `ok` |
 
-**Orden de la lista:** ETA de entrega; si no hay, ETA al próximo destino; si no hay, entrega planificada.
+**Orden de la lista:** primero por la incidencia más grave (bloqueante → atención → revisión → sin incidencias, §8.5); después por ETA de entrega; si no hay, ETA al próximo destino; si no hay, entrega planificada.
 
 ### 8.5 Incidencias y acciones
 
@@ -192,7 +192,7 @@ Un envío puede tener varias incidencias. Las acciones aparecen solo en `/ops`; 
 - Solo un evento del operador levanta una retención.
 - "Avisar al cliente" solo registra la acción. No envía nada y no cambia la vista del cliente.
 
-### 8.6 Banner de avisos (`/filial` y `/cliente`)
+### 8.6 Banner de avisos (`/subsidiary` y `/customer`)
 
 El banner anticipa problemas al cliente sin enviar nada.
 
@@ -242,7 +242,7 @@ Cada caso de la tabla tiene un test.
 La IA solo lee texto libre. Una lectura IA nunca sustituye al plan ni a un dato del operador.
 
 ```ts
-// ai/interpretText.ts — mock: respuesta fija tras ~400 ms
+// mock-api/server.ts (vía api/client.ts) — mock: respuesta fija tras ~400 ms
 interpretText(text: string): Promise<{
   milestone: RoadTag | SeaTag | null; at?: string; location?: string;
   eta?: string;            // fecha nueva, si el texto la da
@@ -252,10 +252,10 @@ interpretText(text: string): Promise<{
 }>
 ```
 
-- Al arrancar, la app llama a `interpretText` una vez por email y espera todas las respuestas antes del primer render.
+- Al cargar un rol, la app llama a `interpretText` por cada email del perímetro (una vez por carga de página) y espera las respuestas antes del render. Una lectura fallida cuenta como ilegible.
 - La respuesta sale de un mapa fijo por id de email. Un texto desconocido devuelve `milestone: null`.
 - `milestone: null` o `confidence < 0.7` → `NOT_MAPPED`.
-- En otro caso, el paso lleva la etiqueta `AI`, la confianza, la cita, "Read as" y el email original.
+- En otro caso, el paso lleva la etiqueta `AI` con la confianza ("AI-read 82%") y, debajo, el email original con Accept / Reject.
 - **Pendiente:** solo ops la ve. No cambia ETA ni plan. Bloquea "Avisar al cliente".
 - **Accept:** el paso pasa a confirmado y una fecha nueva pasa a ser la ETA. El cliente ve el paso como una actualización normal, sin marca de IA.
 - **Reject:** ops ve la lectura en el historial como rechazada. No cambia nada.
@@ -264,36 +264,37 @@ interpretText(text: string): Promise<{
 
 Cada rol tiene una pantalla: la lista de envíos con filas que se abren, como en el diseño. UI en inglés, con los textos del diseño.
 
-| Elemento | `/ops` | `/filial` y `/cliente` |
+| Elemento | `/ops` | `/subsidiary` y `/customer` |
 | --- | --- | --- |
 | Cabecera | "Shipments" y los tres sitios | "Your shipments" y la persona |
 | Búsqueda por ID y filtros con contador (Delayed, With incident, Customs hold, Stale) | Sí | Sí |
 | Filtro "Needs review" con contador | Sí | No |
 | Banner de avisos (§8.6) | No | Sí |
-| Fila: ID, descripción, PO, origen → destino, estado, barra de etapas, operador, ETA, fecha planificada, delta, última actualización | Sí, más el cliente | Sí |
+| Fila (tarjeta): cabecera con ID, descripción, PO, "Delayed +N d" si hay retraso, última actualización y "View details"; barra de etapas con paradas y operadores; estado, fecha planificada con delta y ETA (si hay) | Sí, más el cliente | Sí |
+| Incidencias en la fila con su gravedad (Blocking, Attention, Review) y la acción siguiente | Sí | No |
 | Etiquetas de fecha | ACT, EST, PLN, No ETA, AI-read | Confirmed, Estimate, Planned, Not known yet |
 | Pasos hechos y fuentes | Todos. Lectura IA: email + Accept / Reject. `NOT_MAPPED`: crudo | Confirmados y lecturas IA aceptadas, sin marca de IA |
 | Próximos pasos | Con la alternativa IA, si existe | Sin alternativa |
 | Acción siguiente | Sí | No |
-| Documentos | Open y Upload | Open, o "Being prepared by Acme" si falta |
-| Entregados (plegados) y leyenda | Sí | Sí, con textos para cliente |
+| Documentos | Open y Upload | No |
+| Entregados (plegados) | Sí | Sí |
 
 ## 11. Stack y calidad
 
-Vite + React + TypeScript + Tailwind + TanStack Router (rutas por archivo) + Zustand + Vitest. Gestor: pnpm. Sin backend, sin Next.js, sin librería de componentes.
+Vite + React + TypeScript + Tailwind + TanStack Router (rutas por archivo) + TanStack Query + Vitest. Gestor: pnpm. Sin backend real, sin Next.js, sin librería de componentes.
 
 ```
-app/src/
-  data/        fixtures (operators.ts, shipments.ts, emails.ts) + NOW
-  domain/      adapters/ (dhl, dcsa, terminal49, email), mapShipment.ts, stateMachine.ts, rules.ts — TS puro
-  ai/          interpretText.ts (mock)
-  state/       useShipmentStore.ts
+src/
+  api/         contracts.ts (tipos del cable), client.ts (única puerta al backend)
+  mock-api/    server.ts (perímetro, actividad, IA mock) + fixtures/ (shipments, emails, operators, personas, aiReadings)
+  domain/      adapters/ (dhl, dcsa, terminal49, email, vocabularies), mapShipment.ts, stateMachine.ts, rules.ts, clock.ts — TS puro
+  data/        shipments.ts (queries y selectores)
   i18n/        en.ts
-  routes/      index, ops, filial, cliente
-  components/  fila, barra de etapas, pasos, fuentes, acciones, documentos, leyenda, banner
+  routes/      index, ops, subsidiary, customer
+  components/  ui/ (primitivas) y shipments/ (lista, tarjeta, barra de etapas, pasos, fuentes, acciones, documentos, banner)
 ```
 
-- `domain/` y `ai/` no importan React.
+- `domain/` no importa React y solo importa tipos de `api/contracts`.
 - **i18n:** los componentes no contienen texto visible. Todos los textos están en `src/i18n/en.ts` y se leen con `t('clave', { params })`. Un idioma nuevo es un archivo nuevo.
 - **Tests (Vitest):** cada adaptador; `mapShipment` con los 7 envíos (estado, ETA, stale, incidencias, acciones); cada caso de `applyEvent`.
 - La app funciona en escritorio, en móvil y con teclado.
@@ -306,17 +307,17 @@ app/src/
 2. **ACM-24790:** lectura IA pendiente del email de TransPirineo (avería cerca de Lyon). Alternativa "Tue 24 Nov". "Avisar al cliente" bloqueado. Accept → ETA Tue 24, con Mon 23 tachado, y "+1 d".
 3. **ACM-24817:** retención en Veracruz con sus fuentes (DCSA, Terminal API, email aceptado). Factura `flagged` y factura corregida `missing`. Subir documento → "Uploaded". Avisar al cliente → hecho.
 4. **ACM-24801:** DeCA `missing` → Subir documento. **ACM-24755:** stale 88 h → Contactar al operador.
-5. **`/filial`:** ve ACM-24817 y ACM-24866. Banner: retención de ACM-24817. **`/cliente`:** ve ACM-24790 con la ETA aceptada. Banner: "+1 d late" con motivo "Vehicle breakdown". Etiquetas en palabras, sin acciones.
-6. **Perímetro:** en `/cliente`, la búsqueda de ACM-24812 no devuelve resultados.
+5. **`/subsidiary`:** ve ACM-24817 y ACM-24866. Banner: retención de ACM-24817. **`/customer`:** ve ACM-24790 con la ETA aceptada. Banner: "+1 d late" con motivo "Vehicle breakdown". Etiquetas en palabras, sin acciones.
+6. **Perímetro:** en `/customer`, la búsqueda de ACM-24812 no devuelve resultados.
 
 **Criterios:**
 
 - [ ] Los 7 envíos salen de fixtures crudos con la forma de `api-responses.md`, a través de adaptadores y `mapShipment`.
 - [ ] Cada paso muestra su fuente y su etiqueta. Un valor no reconocido queda `NOT_MAPPED`.
-- [ ] El sistema no calcula ninguna ETA. Sin ETA del operador, la UI muestra "ETA not available".
+- [ ] El sistema no calcula ninguna ETA. Sin ETA del operador, la fila oculta la columna ETA.
 - [ ] Una lectura IA no cambia nada hasta que ops la acepta. El cliente no la ve antes.
 - [ ] Incidencias y acciones siguen §8.5. Las acciones aparecen solo en `/ops`.
-- [ ] El banner sigue §8.6 y solo aparece en `/filial` y `/cliente`.
+- [ ] El banner sigue §8.6 y solo aparece en `/subsidiary` y `/customer`.
 - [ ] Ningún rol ve envíos fuera de su perímetro.
 - [ ] `pnpm dev` arranca la app y `pnpm test` pasa.
 - [ ] La app está desplegada en Vercel y el repositorio es accesible.

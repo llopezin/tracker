@@ -113,7 +113,7 @@ interface Shipment {
 
 ## 3. Mapping (phase 1)
 
-**Road — DHL-shaped operators:** `events[].status` → `RoadTag` through each operator's vocabulary in `data/operators.ts`. Cross-check: `statusCode = delivered` must be `DELIVERED`; `failure` → `DELIVERY_FAILED` or `EXCEPTION`. ETA from `estimatedDeliveryTimeFrame` (a window, or a single date).
+**Road — DHL-shaped operators:** `events[].status` → `RoadTag` through each operator's vocabulary in `domain/adapters/vocabularies.ts`. Cross-check: `statusCode = delivered` must be `DELIVERED`; `failure` → `DELIVERY_FAILED` or `EXCEPTION`. ETA from `estimatedDeliveryTimeFrame` (a window, or a single date).
 
 **Sea:**
 
@@ -135,7 +135,7 @@ interface Shipment {
 
 **Email:** AI mock → `AiExtraction` + a tag of the leg's mode, or `NOT_MAPPED`.
 
-## 4. Internal record (`data/shipments.ts`)
+## 4. Internal record (`mock-api/fixtures/shipments.ts`)
 
 What the manufacturer knows; no provider sends it.
 
@@ -144,7 +144,7 @@ interface ShipmentRecord {
   id: string;                         // "ACM-24817"
   description: string;                // goods
   po: string;                         // customer's purchase order
-  customerAccount: string;            // perimeter for /filial and /cliente
+  customerAccount: string;            // perimeter for /subsidiary and /customer
   customerName: string;               // shown in /ops
   originSite: Place;                  // perimeter for /ops
   destination: Place;
@@ -181,7 +181,7 @@ interface ShipmentView {
   destination: string;
   status: string;                     // i18n key from the current tag
   subStatus: string;                  // reason (place is already in the mode bar)
-  tone: 'ok' | 'delay' | 'risk' | 'ai' | 'stale' | 'pre';
+  health: 'ok' | 'delay' | 'risk' | 'ai' | 'stale' | 'pre'; // most important state; pre = not departed, ai = AI read awaiting review
   stages: {
     kind: 'road' | 'sea' | 'port';    // port only with Terminal49 data
     weight: number;                   // relative width
@@ -215,7 +215,7 @@ interface ShipmentView {
     blockedBy?: string;               // AI update id to accept first
     done?: { by: string; at: string };
   }[];
-  documents: {
+  documents: {                        // /ops only
     key: string;
     name: string;
     status: 'ok' | 'flagged' | 'missing' | 'uploaded';
@@ -236,12 +236,23 @@ interface StepView {
   sources: {
     label: string;
     operator: string;
-    receivedAt: string;
+    receivedAt?: string;              // absent for internal-plan steps
     raw?: string;                     // email and UNKNOWN only
-    ai?: { id: string; confidence: number; quote: string; readAs: string; review: 'pending' | 'accepted' | 'rejected' };
+    ai?: { id: string; confidence: number; quote: string; readAs: string; review: 'pending' | 'accepted' | 'rejected'; reviewedBy?: string; reviewedAt?: string };
   }[];
 }
 ```
 
 **Labels:** `ACTUAL` → `ACT`, `ESTIMATED` → `EST`, `PLANNED` → `PLN`, planned without date → `NA`, pending AI → `AI`, `NOT_MAPPED` → `UNKNOWN`, `order = 'rejected'` → `IGNORED`.
-**Customer view** never receives `AI`, `UNKNOWN`, `IGNORED`, rejected AI updates, `aiAlternative` or `actions`. Accepted AI updates reach it as normal steps, with no AI mark.
+**Customer view** never receives `AI`, `UNKNOWN`, `IGNORED`, rejected AI updates, `aiAlternative`, `actions` or `documents`. Accepted AI updates reach it as normal steps, with no AI mark.
+
+```ts
+interface Notice {                    // customer notice line, from rules.customerNotice
+  shipmentId: string;
+  kind: 'late' | 'overdue' | 'customs';
+  days?: number;                      // 'late'
+  newEta?: string;                    // ISO, operator ETA or accepted AI date
+  place?: string;                     // 'customs'
+  reason?: string;                    // translated milestone label, e.g. "Vehicle breakdown"
+}
+```

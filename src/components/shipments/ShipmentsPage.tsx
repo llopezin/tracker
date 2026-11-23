@@ -155,11 +155,6 @@ export function ShipmentsPage({ role }: { role: Role }) {
               key={f.key}
               pressed={active.has(f.key)}
               count={counts[f.key] ?? 0}
-              countTone={
-                f.key === "delayed" || f.key === "review"
-                  ? "signal"
-                  : "neutral"
-              }
               onClick={() => toggleFilter(f.key)}
             >
               {t(f.label)}

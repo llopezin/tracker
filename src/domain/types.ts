@@ -190,7 +190,7 @@ export interface ShipmentView {
   deliveredAt?: string
 }
 
-// Customer notice line, computed by rules.customerNotice. Not in data-model.md.
+// Customer notice line, computed by rules.customerNotice.
 export interface Notice {
   shipmentId: string
   kind: 'late' | 'overdue' | 'customs'

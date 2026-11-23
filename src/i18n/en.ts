@@ -145,7 +145,6 @@ export const en = {
   'ui.doc.open': 'Open',
   'ui.doc.openAria': 'Open {name}',
   'ui.doc.upload': 'Upload',
-  'ui.doc.preparing': 'Being prepared by Acme',
   'ui.notice.label': 'Shipments needing attention',
 } as const
 
