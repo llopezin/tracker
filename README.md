@@ -27,15 +27,6 @@ Session state (AI reviews, actions, uploads) is shared across routes and lost on
 
 The repo root is the Vite project, so import it with the Vite preset; no Root Directory setting is needed. `vercel.json` rewrites every path to `index.html` so `/ops`, `/subsidiary` and `/customer` load directly.
 
-## Demo (≈5 min, see `docs/PRD.md` §12)
-
-1. `/ops`: filter counters, Needs review = 1.
-2. ACM-24790: pending AI read of the TransPirineo email. Accept it → ETA Tue 24 Nov, Mon 23 struck through, "+1 d".
-3. ACM-24817: customs hold at Veracruz with its sources. Upload the corrected invoice, then notify the customer.
-4. ACM-24801: upload the DeCA. ACM-24755: stale for 88 h → contact the operator.
-5. `/subsidiary` and `/customer`: notice banner, customer wording, no actions.
-6. `/customer`: searching ACM-24812 returns nothing (perimeter).
-
 ## Layout
 
 ```

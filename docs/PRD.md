@@ -130,8 +130,10 @@ Estado, ETA, incidencias, acciones y avisos salen solo de estas reglas. Ninguna 
 
 - La ETA viene solo del operador: `estimatedTimeOfDelivery` / `estimatedDeliveryTimeFrame` en carretera, `EST` de DCSA en mar.
 - La fuente de la ETA se ve en el paso correspondiente del detalle.
-- Si solo el próximo destino tiene ETA → "ETA to next stop · \<lugar>".
-- La fila oculta la columna ETA si no hay ETA del operador, hay retención, el envío no ha salido o está stale. No se muestra ninguna fecha en su lugar.
+- ETA de entrega = la ETA más reciente del último tramo.
+- Si el último tramo no tiene ETA, se usa la más reciente del tramo actual (si no es el último) → "ETA to next stop · \<lugar>".
+- La fila oculta la columna ETA si no hay ETA del operador, hay retención, el envío no ha salido o está stale. No se muestra ninguna fecha en su lugar. Un envío entregado muestra su fecha de entrega.
+- Con la ETA oculta, el detalle tampoco muestra el `EST` del operador en ese paso: muestra el plan (`PLN`) o nada.
 - Una lectura IA pendiente con fecha nueva no cambia la ETA. Ops la ve en el detalle como alternativa del próximo paso ("AI-read 82%").
 - Ops acepta la lectura → la fecha nueva es la ETA, con la anterior tachada.
 
@@ -139,16 +141,22 @@ Estado, ETA, incidencias, acciones y avisos salen solo de estas reglas. Ninguna 
 
 Un envío está retrasado si se cumple una condición:
 
-1. La ETA más reciente del operador es posterior a su compromiso: `agreedDeliveryDate` (DHL), `PLN` del mismo hito (DCSA) o, sin estos, el plan.
-2. Un hito `ACT` ocurre uno o más días naturales después de su plan.
+1. En un tramo abierto, la ETA más reciente (inicio de la franja; incluye lecturas IA aceptadas) es posterior a su compromiso: `agreedDeliveryDate` (DHL), el `PLN` más reciente de la llegada (DCSA) o, sin estos, el plan.
+2. Un hito `ACT` (del operador o IA aceptada) ocurre uno o más días naturales después de su plan.
 3. `NOW` es posterior a la entrega planificada y el envío no está entregado.
-4. El operador indica el retraso (`delayReasonCode` en DCSA).
+4. Hay un paso `DELAYED` confirmado (operador o IA aceptada; en DCSA, `delayReasonCode`).
 
-El delta es "+N d". En el caso 3 es "Overdue". Una ETA revisada dentro del plan no es retraso.
+- N = días naturales en Europe/Madrid, N ≥ 1. Un desvío dentro del mismo día no es retraso. Una ETA revisada dentro del plan no es retraso.
+- El delta es "+N d". Si varias condiciones dan N, gana el mayor.
+- En el caso 3 el delta es "Overdue", y gana a cualquier N.
+- El caso 4 puede ser un retraso sin N: la incidencia dice "Delayed".
+- Un envío entregado no tiene delta.
 
 ### 8.3 Stale
 
-Sin evento nuevo durante más de 24 h (carretera) o 72 h (mar). No aplica a entregados ni a envíos que no han salido.
+- Horas desde la última actualización recibida (hora de recepción) de cualquier fuente que cuenta: eventos del operador (`ACT`, `EST`, `PLN`, `NOT_MAPPED`) y lecturas IA aceptadas. Las lecturas IA pendientes o rechazadas no cuentan.
+- Umbral según el modo del tramo actual: más de 24 h (carretera) o 72 h (mar).
+- No aplica a entregados ni a envíos que no han salido. Sin ninguna actualización, nunca es stale.
 
 ### 8.4 Estado, salud y orden
 
@@ -164,31 +172,47 @@ Se aplica la primera condición que se cumple:
 | 6 | No ha salido | `pre` |
 | 7 | Otro caso | `ok` |
 
-**Orden de la lista:** primero por la incidencia más grave (bloqueante → atención → revisión → sin incidencias, §8.5); después por ETA de entrega; si no hay, ETA al próximo destino; si no hay, entrega planificada.
+- Entregado: `health` es `ok` y el envío va a la sección de entregados.
+- `ai` solo existe en `/ops`. En las vistas de cliente ese caso cae en `pre` u `ok`.
+
+**Orden de la lista:**
+
+1. Incidencia más grave (§8.5): bloqueante (`customs_hold`, `missing_document`) → atención (`delay`, `stale`, `unmapped`) → revisión (`ai_pending`) → sin incidencias.
+2. ETA mostrada en la fila (de entrega o al próximo destino). Si la fila no muestra ETA (retención, stale, no ha salido), entrega planificada, aunque exista ETA del operador.
+3. ID del envío, como desempate.
 
 ### 8.5 Incidencias y acciones
 
-Un envío puede tener varias incidencias. Las acciones aparecen solo en `/ops`; la primaria va primero.
+Un envío puede tener varias incidencias. Las acciones aparecen solo en `/ops`.
+
+- Un envío entregado no tiene incidencias ni acciones.
+- `ai_pending` y `unmapped` son solo de ops: las vistas de cliente nunca las reciben.
+- Una incidencia `missing_document` por documento; una `unmapped` por operador.
 
 | Incidencia | Condición | Acciones | Filtro |
 | --- | --- | --- | --- |
-| `customs_hold` | Retención activa | Subir documento (si hay uno `flagged` o `missing`) · Avisar al cliente · Contactar al operador | Customs hold, Delayed |
+| `customs_hold` | Retención activa (envío no entregado) | Subir documento · Avisar al cliente · Contactar al operador | Customs hold, Delayed |
 | `missing_document` | Documento obligatorio `missing` | Subir documento · Avisar al cliente | With incident |
 | `delay` | Regla 8.2 | Avisar al cliente · Contactar al operador | Delayed |
-| `ai_pending` | Lectura IA pendiente | Accept / Reject en la fuente. "Avisar al cliente" está bloqueado hasta la revisión | Needs review |
+| `ai_pending` | Lectura IA pendiente | Accept / Reject en la fuente · Avisar al cliente (bloqueado hasta la revisión) | Needs review |
 | `stale` | Regla 8.3 | Contactar al operador | Stale |
 | `unmapped` | Paso `NOT_MAPPED` | Contactar al operador | With incident |
 
 **Documentos obligatorios:**
 
-- El DeCA es obligatorio solo en tramos de carretera nacionales contratados. Nunca con camión propio ni con paquetería.
-- El e-CMR es opcional y nunca genera incidencia.
+- Son obligatorios los documentos que lista el registro interno del envío, salvo el e-CMR.
+- El registro lista el DeCA solo en tramos de carretera nacionales contratados. Nunca con camión propio ni con paquetería.
+- El e-CMR es opcional: nunca genera incidencia ni se ofrece para subir.
 
 **Acciones:**
 
+- Una acción por tipo, aunque varias incidencias la pidan, en el orden de la tabla. La primera es la primaria.
 - Cada acción tiene un texto de plantilla con datos del envío (como en el diseño).
-- Ops hace la acción → la UI muestra "Done by ops@acme.com · hh:mm".
+- Ops hace la acción → la UI muestra "Done by ops@acme.com · hh:mm". La acción hecha sigue en la lista aunque su incidencia se resuelva.
+- "Subir documento" aparece, para cualquier incidencia, solo si hay un documento obligatorio `missing` o `flagged`. Sube el primero `missing`; si no hay, el primero `flagged`. Hecha, nombra el documento subido.
 - "Subir documento" cambia el documento a `uploaded` y resuelve `missing_document`.
+- "Avisar al cliente" está bloqueado mientras haya cualquier lectura IA pendiente en el envío ("Review the AI-read update first").
+- "Contactar al operador" nombra al operador del tramo actual.
 - Solo un evento del operador levanta una retención.
 - "Avisar al cliente" solo registra la acción. No envía nada y no cambia la vista del cliente.
 
@@ -196,10 +220,12 @@ Un envío puede tener varias incidencias. Las acciones aparecen solo en `/ops`; 
 
 El banner anticipa problemas al cliente sin enviar nada.
 
-- Aparece arriba de la lista si un envío del perímetro tiene retraso o retención. Sin envíos afectados, no hay banner.
-- Una línea por envío, con campos (no frases): ID · estado ("+N d late", "Overdue", "Held at customs") · nueva ETA si existe ("New ETA Tue 24 Nov") · lugar si es retención · motivo si existe.
-- Motivo = etiqueta del hito que causa el problema: `BREAKDOWN` → "Vehicle breakdown", `DELAYED` → texto de su `delayReasonCode`, `CUSTOMS_HOLD`. Sin ese hito, no hay motivo.
-- El banner usa solo eventos del operador y lecturas IA aceptadas. Una lectura pendiente no genera aviso.
+- Aparece arriba de la lista si un envío no entregado del perímetro tiene retraso o retención. Sin envíos afectados, no hay banner.
+- Una línea por envío, con campos (no frases): ID · estado · nueva ETA si existe ("New ETA Tue 24 Nov") · lugar si es retención · motivo si existe.
+- Estado: "Held at customs" si hay retención (gana al retraso); si no, "Overdue" (caso 3 de §8.2) o "+N d late". Un retraso sin N dice "Delayed".
+- Nueva ETA = la ETA que muestra la fila. Una línea de retención no lleva nueva ETA.
+- Motivo = etiqueta del último paso confirmado (operador o IA aceptada) `BREAKDOWN` → "Vehicle breakdown", `DELAYED` → su código `delayReasonCode` tal cual (o "Delayed" sin código), `CUSTOMS_HOLD` → "Held at customs". Sin ese paso, no hay motivo. Si el motivo repite el estado, no se muestra.
+- El banner usa solo eventos del operador y lecturas IA aceptadas. Una lectura pendiente no genera aviso: un envío que solo tiene revisión IA pendiente no aparece.
 - Textos de plantilla en i18n. Sin IA.
 
 ### 8.7 Máquina de estados (por tramo)
