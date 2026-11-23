@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PageLoading, ShipmentsPage } from '../components/shipments/ShipmentsPage'
-import { queryClient, shipmentsQuery } from '../data/shipments'
+import { queryClient, shipmentsQuery } from '../queries/shipments'
 
 export const Route = createFileRoute('/customer')({
   loader: () => queryClient.fetchQuery(shipmentsQuery('customer')),

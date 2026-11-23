@@ -314,7 +314,7 @@ src/
   api/         contracts.ts (tipos del cable), client.ts (única puerta al backend)
   mock-api/    server.ts (perímetro, actividad, IA mock) + fixtures/ (shipments, emails, operators, personas, aiReadings)
   domain/      adapters/ (dhl, dcsa, terminal49, email, vocabularies), mapShipment.ts, stateMachine.ts, rules.ts, clock.ts — TS puro
-  data/        shipments.ts (queries y selectores)
+  queries/      shipments.ts (queries y selectores)
   i18n/        en.ts
   routes/      index, ops, subsidiary, customer
   components/  ui/ (primitivas) y shipments/ (lista, tarjeta, barra de etapas, pasos, fuentes, acciones, documentos, banner)

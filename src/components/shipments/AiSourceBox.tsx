@@ -1,7 +1,7 @@
 import type { StepView } from '../../domain/types'
 import { t } from '../../i18n/t'
 import type { Role } from '../../api/contracts'
-import { useRecordActivity } from '../../data/shipments'
+import { useRecordActivity } from '../../queries/shipments'
 import { Button } from '../ui/Button'
 import { Label } from '../ui/Label'
 import { Panel } from '../ui/Panel'

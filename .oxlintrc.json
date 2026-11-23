@@ -8,11 +8,11 @@
   },
   "overrides": [
     {
-      "files": ["src/routes/**", "src/data/**"],
+      "files": ["src/routes/**", "src/queries/**"],
       "rules": { "react/only-export-components": "off" }
     },
     {
-      "files": ["src/api/contracts.ts", "src/data/**", "src/components/**", "src/routes/**", "src/i18n/**", "src/main.tsx"],
+      "files": ["src/api/contracts.ts", "src/queries/**", "src/components/**", "src/routes/**", "src/i18n/**", "src/main.tsx"],
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
@@ -27,8 +27,8 @@
         "no-restricted-imports": ["error", {
           "patterns": [
             { "regex": "(^|/)mock-api(/|$)", "message": "The domain never sees the mock backend." },
-            { "regex": "(^|/)api/client$", "message": "The domain is pure: the shipments query (data/shipments.ts) fetches." },
-            { "regex": "(^|/)(data|components|routes)(/|$)", "message": "The domain does not depend on the app." },
+            { "regex": "(^|/)api/client$", "message": "The domain is pure: the shipments query (queries/shipments.ts) fetches." },
+            { "regex": "(^|/)(queries|components|routes)(/|$)", "message": "The domain does not depend on the app." },
             { "regex": "(^|/)api/contracts$", "allowTypeImports": true, "message": "Use `import type` from api/contracts." }
           ]
         }]
@@ -39,7 +39,7 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "regex": "(^|/)(api/client|data|components|routes)(/|$)", "message": "The mock backend does not depend on the app." }
+            { "regex": "(^|/)(api/client|queries|components|routes)(/|$)", "message": "The mock backend does not depend on the app." }
           ]
         }]
       }

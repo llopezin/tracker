@@ -41,7 +41,7 @@ src/
     rules.ts       eta, delay/delta, stale, health, incidents, actions, customerNotice, sortShipments (worst incident first)
     mapShipment.ts mapShipments(raw shipments + AI readings + activity, audience) → ShipmentView[] in list order
     clock.ts
-  data/shipments.ts  TanStack Query: shipmentsQuery(role), useShipments / useNotices selectors, useRecordActivity
+  queries/shipments.ts  TanStack Query: shipmentsQuery(role), useShipments / useNotices selectors, useRecordActivity
   i18n/en.ts
   routes/          /, /ops, /subsidiary, /customer 
   components/      use the design-system library; don't create primitives that already exist

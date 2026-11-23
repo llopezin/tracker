@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import type { Role } from "../../api/contracts";
 import { getPersona } from "../../api/client";
-import { useShipments } from "../../data/shipments";
+import { useShipments } from "../../queries/shipments";
 import type { ShipmentView } from "../../domain/types";
 import type { MessageKey } from "../../i18n/en";
 import { t } from "../../i18n/t";

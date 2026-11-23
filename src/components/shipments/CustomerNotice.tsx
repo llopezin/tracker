@@ -1,5 +1,5 @@
 import type { Role } from '../../api/contracts'
-import { useNotices } from '../../data/shipments'
+import { useNotices } from '../../queries/shipments'
 import type { Notice } from '../../domain/types'
 import { t } from '../../i18n/t'
 import { Icon } from '../ui/Icon'
